@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ Hola }}{% endblock %}
+
+{% block content %}
+
+<div style="
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #f5f5f5;
+">
+  
+  <div style="
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 860px;
+  ">
+<div style="display: flex; align-items: center; gap: 2rem; ">
+  <button class="fs-button">3-</button>
+  <h2 style="margin: 0;">Regla</h2>
+  
+</div>
+  
+<form
+  action="https://formspree.io/f/{FORM_ID}"
+  class="fs-form fs-layout__2-column"
+  target="_top"
+  method="POST"
+>
+  
+  <fieldset>
+    <div class="fs-field">
+      <label class="fs-label" for="first-name">First Name</label>
+      <input class="fs-input" id="first-name" name="first-name" required />
+    </div>
+    <div class="fs-field">
+      <label class="fs-label" for="last-name">Last Name</label>
+      <input class="fs-input" id="last-name" name="last-name" required />
+      <p class="fs-description">
+        We&#x27;ll use this to generate your event pass.
+      </p>
+    </div>
+  </fieldset>
+  <fieldset>
+    <div class="fs-field">
+      <label class="fs-label" for="email">Email</label>
+      <input class="fs-input" id="email" name="email" required />
+    </div>
+    <div class="fs-field">
+      <label class="fs-label" for="number">Contact Number</label>
+      <input
+        class="fs-input"
+        id="number"
+        name="number"
+        placeholder="(000) 000-0000"
+        required
+      />
+    </div>
+  </fieldset>
+  <div class="fs-field col-span-full">
+    <label class="fs-label" for="address">Address (optional)</label>
+    <textarea class="fs-textarea" id="address" name="address"></textarea>
+  </div>
+  <fieldset>
+    <div class="fs-field">
+      <label class="fs-label">
+        Please check the dates you would be attending
+      </label>
+      <div class="fs-checkbox-group">
+        <div class="fs-checkbox-field">
+          <div class="fs-checkbox-wrapper">
+            <input
+              class="fs-checkbox"
+              id="dates-day-1"
+              name="dates"
+              required
+              type="checkbox"
+              value="day-1"
+            />
+          </div>
+          <div>
+            <label class="fs-label" for="dates-day-1">Day 1</label>
+          </div>
+        </div>
+        <div class="fs-checkbox-field">
+          <div class="fs-checkbox-wrapper">
+            <input
+              class="fs-checkbox"
+              id="dates-day-2"
+              name="dates"
+              required
+              type="checkbox"
+              value="day-2"
+            />
+          </div>
+          <div>
+            <label class="fs-label" for="dates-day-2">Day 2</label>
+          </div>
+        </div>
+        <div class="fs-checkbox-field">
+          <div class="fs-checkbox-wrapper">
+            <input
+              class="fs-checkbox"
+              id="dates-day-3"
+              name="dates"
+              required
+              type="checkbox"
+              value="day-3"
+            />
+          </div>
+          <div>
+            <label class="fs-label" for="dates-day-3">Day 3</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fs-field">
+      <label class="fs-label" for="dates">
+        Please select your t-shirt size
+      </label>
+      <select class="fs-select" id="dates" name="dates">
+        <option value="s">S</option>
+        <option value="m">M</option>
+        <option value="l">L</option>
+        <option value="xl">XL</option>
+      </select>
+    </div>
+  </fieldset>
+  <div class="fs-button-group">
+    <button class="fs-button" type="submit">Submit</button>
+  </div>
+</form>
+</div>
+</div>
+{% endblock %}
