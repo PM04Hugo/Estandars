@@ -30,8 +30,11 @@
         </a>
         <h2 style="margin: 0;">Regla</h2>
         </div>
-        <br>
         <form class="fs-form fs-layout__2-column" method="POST">
+            {% csrf_token %}
+            <div class="fs-field col-span-full">
+            <input class="fs-input" type="text" id="regla" name="regla" ></input>
+            </div>
             <fieldset>
                 <div>
                     <label class="fs-label" for="nombre">Nombre</label>
@@ -50,17 +53,19 @@
                 <div class="slidecontainer">
                     <label class="slider-label-text">Minimo</label>
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <input type="range" min="1" max="100" value="50" class="fs-slider" id="minimo"
-                            oninput="document.getElementById('val-maximo').textContent = this.value">
+                        <input type="range" class="fs-slider" id="minimo"
+                         oninput="document.getElementById('val-minimo').textContent = this.value;
+                        document.getElementById('minimo-hidden').value = this.value;">
+
                         
                     </div>
                 </div>
                 <div class="slidecontainer">
                     <label class="slider-label-text">Máximo</label>
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <input type="range" min="1" max="100" value="50" class="fs-slider" id="maximo"
-                            oninput="document.getElementById('val-minimo').textContent = this.value">
-                        
+                        <input type="range" class="fs-slider" id="maximo"
+                        oninput="document.getElementById('val-maximo').textContent = this.value;
+                        document.getElementById('maximo-hidden').value = this.value;">
                     </div>
                 </div>
             </fieldset>
@@ -80,38 +85,15 @@
                     rows="4">
                 </textarea>
             </div>
+            <input type="hidden" id="minimo-hidden" name="minimo" value="0">
+            <input type="hidden" id="maximo-hidden" name="maximo" value="0">
             <div class="fs-button-group">
-                <button class="fs-button" type="submit">Submit</button>
+                <button class="fs-button" name="submit" type="submit">Submit</button>
             </div>
         </form>
     </div>
 </div>
   
-<!-- Input de nombre -->
-<input class="fs-input" type="text" id="nombre" name="nombre"
-       oninput="actualizarUnidades()" placeholder="Escribe un nombre...">
-
-<!-- Select de unidades (empieza vacío) -->
-<select class="fs-select" id="unidades" onchange="actualizarSliders()">
-</select>
-
-<!-- Sliders con sus spans -->
-<div class="slidecontainer">
-    <label class="slider-label-text">Mínimo</label>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <input type="range" class="fs-slider" id="minimo"
-               oninput="document.getElementById('val-minimo').textContent = this.value">
-        <span id="val-minimo">-</span>
-    </div>
-</div>
-<div class="slidecontainer">
-    <label class="slider-label-text">Máximo</label>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <input type="range" class="fs-slider" id="maximo"
-               oninput="document.getElementById('val-maximo').textContent = this.value">
-        <span id="val-maximo">-</span>
-    </div>
-</div>
 
 <!-- Datos construidos desde Django -->
 <script>
@@ -167,6 +149,7 @@ function actualizarSliders() {
         slider.step  = option.dataset.step;
         slider.value = (parseFloat(option.dataset.min) + parseFloat(option.dataset.max)) / 2;
         document.getElementById("val-" + id).textContent = slider.value;
+        document.getElementById(id + "-hidden").value = slider.value;
     });
 }
 </script>
