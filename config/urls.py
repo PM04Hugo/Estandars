@@ -18,10 +18,16 @@ from django.contrib import admin
 from django.urls import path,include
 from config import settings
 from django.conf.urls.static import static
+import estandar.views as views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('departamento/', views.departamento, name='departamento'),
+    path('registro/', views.registro_view, name='registro'),
+    path('login/<int:departamento>', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('estandar/', include('estandar.urls')),#al dejarlo vacio se entiende que es la ruta base
     # Sería en este cacso la 127.0.0.1/8000
     ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
 
