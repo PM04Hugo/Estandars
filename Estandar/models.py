@@ -30,4 +30,17 @@ class Regla(models.Model):
     minimo = models.FloatField()
     maximo = models.FloatField()
     
+    def __str__(self):
+        return self.nombre
+
+class Usuario(models.Model):
+    usuario = models.CharField(max_length=20)
+    password = models.CharField(max_length=20)
+    id=models.AutoField(primary_key=True)
+    departamento=models.IntegerField()#Para saber de que departamento es el usuario
+    
+    def __str__(self):
+        return self.usuario
+
+    
     

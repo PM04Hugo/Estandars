@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 import json
-from .models import Medidas, Regla
+from .models import Medidas, Regla, Usuario
+from django.contrib.auth.hashers import make_password, check_password
 
 
 def formulario(request):
@@ -18,12 +19,54 @@ def formulario(request):
             maximo=float(request.POST.get('maximo')),
         )
         return redirect('base')
-    
     medidas = Medidas.objects.prefetch_related('unidades').all()
     return render(request, 'formulario.html', {'medidas': medidas})
-def form(request):
+
+def form(request): #Formulario solo podría x usuario no se como hacerlo aún
     return render(request, 'form.html')
+
 def base(request):
     return render(request, 'hola.html')
+
+def login_view(request, departamento):
+    if request.method == 'POST':
+        usuario = request.POST['usuario']
+        password = request.POST['password']
+        try:
+            user = Usuario.objects.get(usuario=usuario, departamento=departamento)
+            if check_password(password, user.password):  # ← compara con el hash
+                request.session['usuario_id'] = user.id
+                request.session['departamento'] = user.departamento
+                return redirect('/estandar/')
+            else:
+                messages.error(request, 'Credenciales inválidas')
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Credenciales inválidas o departamento incorrecto')
+
+    return render(request, 'login.html', {'departamento': departamento})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+def departamento(request):
+    return render(request, 'departamento.html')
+
+def registro_view(request):
+    if request.method == 'POST':
+        usuario = request.POST['usuario']
+        password = request.POST['password']
+        departamento = int(request.POST['departamento'])
+        if not Usuario.objects.filter(usuario=usuario).exists():
+            Usuario.objects.create(
+                usuario=usuario,
+                password=make_password(password),  # ← hashea la contraseña
+                departamento=departamento
+            )
+            messages.success(request, 'Usuario registrado exitosamente')
+            return redirect('login/' + str(departamento))
+        else:
+            messages.error(request, 'El usuario ya existe')
+    return render(request, 'registro.html')
 
 # Create your views here.
