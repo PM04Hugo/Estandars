@@ -5,9 +5,7 @@ from django.db import models
 
 class Unidades(models.Model):
     nombre = models.CharField(max_length=20)
-    min = models.FloatField()
-    max = models.FloatField()
-    step = models.FloatField()
+
     
     def __str__(self):
         return self.nombre
@@ -21,6 +19,16 @@ class Medidas(models.Model):
     def __str__(self):
         return self.nombre
     
+class MedidasUnidades(models.Model):
+    id = models.AutoField(primary_key=True)
+    medida = models.ForeignKey(Medidas, on_delete=models.CASCADE)
+    unidad = models.ForeignKey(Unidades, on_delete=models.CASCADE)
+    maximo = models.FloatField()
+    minimo = models.FloatField()
+    step = models.FloatField()
+    
+    def __str__(self):
+        return f"{self.medida.nombre} - {self.unidad.nombre}"
 
 class Regla(models.Model):
     nombre = models.CharField(max_length=20)
