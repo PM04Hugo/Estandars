@@ -97,22 +97,28 @@
 
 <!-- Datos construidos desde Django -->
 <script>
+console.log("medidas:", {{ medidas|length }});
+console.log("relaciones:", {{ relaciones|length }});
+
 const datos = {
     {% for medida in medidas %}
     "{{ medida.nombre }}": {
         "unidades": [
-            {% for u in medida.unidades.all %}
+            {% for r in relaciones %}{% if r.medida == medida %}
             {
-                "nombre": "{{ u.nombre }}",
-                "min": {{ u.min }},
-                "max": {{ u.max }},
-                "step": {{ u.step }}
+                "nombre": "{{ r.unidad.nombre }}",
+                "min": {{ r.minimo }},
+                "max": {{ r.maximo }},
+                "step": {{ r.step }}
             }{% if not forloop.last %},{% endif %}
-            {% endfor %}
+            {% endif %}{% endfor %}
         ]
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
 };
+
+console.log("datos:", datos);
+
 
 function actualizarUnidades() {
     const nombre = document.getElementById("nombre").value.trim();
@@ -138,20 +144,33 @@ function actualizarUnidades() {
     }
 }
 
+
 function actualizarSliders() {
-    const option = document.getElementById("unidades").selectedOptions[0];
-    if (!option) return;
+    const nombre = document.getElementById("nombre").value.trim();
+    const unidad = document.getElementById("unidades").value;
+
+    const clave = Object.keys(datos).find(
+        k => k.toLowerCase() === nombre.toLowerCase()
+    );
+    if (!clave) return;
+
+    const u = datos[clave].unidades.find(u => u.nombre === unidad);
+    if (!u) return;
 
     ["minimo", "maximo"].forEach(id => {
         const slider = document.getElementById(id);
-        slider.min   = option.dataset.min;
-        slider.max   = option.dataset.max;
-        slider.step  = option.dataset.step;
-        slider.value = (parseFloat(option.dataset.min) + parseFloat(option.dataset.max)) / 2;
-        document.getElementById("val-" + id).textContent = slider.value;
-        document.getElementById(id + "-hidden").value = slider.value;
+        slider.min  = u.min;
+        slider.max  = u.max;
+        slider.step = u.step;
+        setTimeout(() => {
+            slider.value = (u.min + u.max) / 2;
+            document.getElementById("val-" + id).textContent = slider.value;
+            document.getElementById(id + "-hidden").value = slider.value;
+        }, 0);
     });
 }
+
+
 </script>
 
 {% endblock %}

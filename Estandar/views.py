@@ -3,12 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 import json
-from .models import Medidas, Regla, Usuario
+from .models import Medidas, Regla, Usuario, MedidasUnidades
 from django.contrib.auth.hashers import make_password, check_password
 
 
 def formulario(request):
-    
     if request.method == 'POST':
         Regla.objects.create(
             nombre=request.POST.get('regla'),
@@ -19,8 +18,14 @@ def formulario(request):
             maximo=float(request.POST.get('maximo')),
         )
         return redirect('base')
-    medidas = Medidas.objects.prefetch_related('unidades').all()
-    return render(request, 'formulario.html', {'medidas': medidas})
+
+    medidas = Medidas.objects.all()
+    relaciones = MedidasUnidades.objects.select_related('medida', 'unidad').all()
+
+    return render(request, 'formulario.html', {
+        'medidas': medidas,
+        'relaciones': relaciones,
+    })
 
 def form(request): #Formulario solo podría x usuario no se como hacerlo aún
     return render(request, 'form.html')
