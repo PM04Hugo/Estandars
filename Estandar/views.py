@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 import json
-from .models import Medidas, Regla, Usuario, MedidasUnidades
+from .models import Medidas, Regla,  MedidasUnidades
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password, check_password
 
 
@@ -29,7 +30,7 @@ def formulario(request):
 
 def form(request): #Formulario solo podría x usuario no se como hacerlo aún
     return render(request, 'form.html')
-
+@login_required
 def base(request):
     return render(request, 'hola.html')
 
@@ -62,16 +63,41 @@ def registro_view(request):
         usuario = request.POST['usuario']
         password = request.POST['password']
         departamento = int(request.POST['departamento'])
-        if not Usuario.objects.filter(usuario=usuario).exists():
-            Usuario.objects.create(
-                usuario=usuario,
-                password=make_password(password),  # ← hashea la contraseña
-                departamento=departamento
-            )
-            messages.success(request, 'Usuario registrado exitosamente')
-            return redirect('login/' + str(departamento))
-        else:
-            messages.error(request, 'El usuario ya existe')
+        
+        if User.objects.filter(username=usuario).exists():
+            messages.error(request, 'El nombre de usuario ya está en uso')
+            return render(request, 'registro.html')
+        
+
+        user = User.objects.create_user(username=usuario, password=password)
+        match departamento:
+            case 1:
+                my_group = Group.objects.get(name='Urgencias') 
+                
+            case 2:
+                my_group = Group.objects.get(name='Diagnostico')
+            case 3:
+                my_group = Group.objects.get(name='General')
+            case _:
+                messages.error(request, 'Departamento no válido')
+                return render(request, 'registro.html')
+                
+        my_group.user_set.add(user)
+        user.save()
+        return redirect('/login/' + str(departamento))
+            
     return render(request, 'registro.html')
+        
+        #if not Usuario.objects.filter(usuario=usuario).exists():
+         #   User.objects.create(
+          #      usuario=usuario,
+           #     password=make_password(password),  # ← hashea la contraseña
+            #    departamento=departamento
+            #)
+           # messages.success(request, 'Usuario registrado exitosamente')
+           # return redirect('login/' + str(departamento))
+        #else:
+         #   messages.error(request, 'El usuario ya existe')
+    #return render(request, 'registro.html')
 
 # Create your views here.
