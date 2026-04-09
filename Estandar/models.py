@@ -13,7 +13,7 @@ class Unidades(models.Model):
     
 class Medidas(models.Model):
     nombre = models.CharField(max_length=20)
-    unidades = models.ManyToManyField(Unidades)
+    #unidades = models.ManyToManyField(Unidades)
 
 
     def __str__(self):
@@ -41,14 +41,6 @@ class Regla(models.Model):
     def __str__(self):
         return self.nombre
 
-class Usuario(models.Model):
-    usuario = models.CharField(max_length=20)
-    password = models.CharField(max_length=20)
-    id=models.AutoField(primary_key=True)
-    departamento=models.IntegerField()#Para saber de que departamento es el usuario
-    
-    def __str__(self):
-        return self.usuario
 
     
     
