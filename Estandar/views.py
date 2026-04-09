@@ -38,15 +38,16 @@ def login_view(request, departamento):
     if request.method == 'POST':
         usuario = request.POST['usuario']
         password = request.POST['password']
-        try:
-            user = Usuario.objects.get(usuario=usuario, departamento=departamento)
-            if check_password(password, user.password):  # ← compara con el hash
+        user = authenticate(username=usuario, password=password)
+        if user is not None:
+            id = user.groups.values_list('id', flat=True).first()
+            if id == departamento:
                 request.session['usuario_id'] = user.id
-                request.session['departamento'] = user.departamento
+                #request.session['departamento'] = user.departamento
                 return redirect('/estandar/')
             else:
-                messages.error(request, 'Credenciales inválidas')
-        except Usuario.DoesNotExist:
+                messages.error(request, 'Departamento incorrecto')
+        else:
             messages.error(request, 'Credenciales inválidas o departamento incorrecto')
 
     return render(request, 'login.html', {'departamento': departamento})
