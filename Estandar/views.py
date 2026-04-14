@@ -31,8 +31,13 @@ def formulario(request):
 def form(request): #Formulario solo podría x usuario no se como hacerlo aún
     return render(request, 'form.html')
 
+@login_required
 def administrador(request):
-    return render(request, 'administrador.html')
+    if User.objects.filter(id=request.session.get('usuario_id'), groups__name='Administrador').exists(): 
+        return render(request, 'administrador.html')
+    else:
+        messages.error(request, 'Acceso denegado: No eres un administrador')
+        return redirect('login/1')
 
 @login_required
 def base(request):
