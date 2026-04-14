@@ -33,13 +33,12 @@
         <form class="fs-form fs-layout__2-column" method="POST">
             {% csrf_token %}
             <div class="fs-field col-span-full">
-            <input class="fs-input" type="text" id="regla" name="regla" ></input>
+            <input class="fs-input" type="text" id="regla" name="regla" placeholder="Como se llama la regla..."></input>
             </div>
             <fieldset>
                 <div>
                     <label class="fs-label" for="nombre">Nombre</label>
-                    <input class="fs-input" type="text" id="nombre" name="nombre" 
-                     oninput="actualizarUnidades()" placeholder="Escribe un nombre...">
+                    <input class="fs-input" type="text" id="nombre" name="nombre" oninput="actualizarUnidades()" placeholder="Escribe un nombre..."/>
                 </div>
                 <div class>
                     <label class="fs-label" for="unidades">
@@ -77,13 +76,7 @@
             </div>
             <div class="fs-field col-span-full">
                 <label class="fs-label" for="descripcion">Descripción</label>
-                <textarea 
-                    class="fs-textarea" 
-                    id="descripcion" 
-                    name="descripcion" 
-                    placeholder="Describe la regla..."
-                    rows="4">
-                </textarea>
+                <textarea class="fs-textarea" id="descripcion" name="descripcion" placeholder="Describe la regla..."rows="4"></textarea>  
             </div>
             <input type="hidden" id="minimo-hidden" name="minimo" value="0">
             <input type="hidden" id="maximo-hidden" name="maximo" value="0">
@@ -95,10 +88,8 @@
 </div>
   
 
-<!-- Datos construidos desde Django -->
+
 <script>
-console.log("medidas:", {{ medidas|length }});
-console.log("relaciones:", {{ relaciones|length }});
 
 const datos = {
     {% for medida in medidas %}
@@ -117,7 +108,6 @@ const datos = {
     {% endfor %}
 };
 
-console.log("datos:", datos);
 
 
 function actualizarUnidades() {

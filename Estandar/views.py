@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 import json
-from .models import Medidas, Regla,  MedidasUnidades
+from .models import Medidas, Regla,  MedidasUnidades, Proyecto
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password, check_password
 
@@ -30,9 +30,23 @@ def formulario(request):
 
 def form(request): #Formulario solo podría x usuario no se como hacerlo aún
     return render(request, 'form.html')
+
+def administrador(request):
+    return render(request, 'administrador.html')
+
 @login_required
 def base(request):
+    if request.method == 'POST':
+        Proyecto.objects.create(
+            nombre=request.POST.get('nombre'),
+            estandard=request.POST.get('estandar'),
+            file=request.FILES.get('fileInput')
+        )
+        return redirect('excel.html') 
+
     return render(request, 'hola.html')
+    
+
 
 def login_view(request, departamento):
     if request.method == 'POST':
@@ -41,12 +55,16 @@ def login_view(request, departamento):
         user = authenticate(username=usuario, password=password)
         if user is not None:
             id = user.groups.values_list('id', flat=True).first()
-            if id == departamento:
+            if id==4:
                 request.session['usuario_id'] = user.id
-                #request.session['departamento'] = user.departamento
-                return redirect('/estandar/')
+                return redirect('/estandar/administrador/')
             else:
-                messages.error(request, 'Departamento incorrecto')
+                if id == departamento:
+                    request.session['usuario_id'] = user.id
+                    #request.session['departamento'] = user.departamento
+                    return redirect('/estandar/')
+                else:
+                    messages.error(request, 'Departamento incorrecto')
         else:
             messages.error(request, 'Credenciales inválidas o departamento incorrecto')
 
@@ -55,6 +73,9 @@ def login_view(request, departamento):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+def excel(request):
+    return render(request, 'excel.html')
 
 def departamento(request):
     return render(request, 'departamento.html')
