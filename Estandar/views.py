@@ -2,10 +2,10 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-import json
-from .models import Medidas, Regla,  MedidasUnidades, Proyecto
+from .models import Medidas, Regla,  MedidasUnidades, Proyecto, Unidades
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.messages import get_messages
+import pandas as pd
 
 
 def formulario(request):
@@ -33,7 +33,7 @@ def form(request): #Formulario solo podría x usuario no se como hacerlo aún
 
 @login_required
 def administrador(request):
-    if User.objects.filter(id=request.session.get('usuario_id'), groups__name='Administrador').exists(): 
+    if User.objects.filter(id=request.session.get('usuario_id'), groups__name='admins').exists(): 
         return render(request, 'administrador.html')
     else:
         messages.error(request, 'Acceso denegado: No eres un administrador')
@@ -42,15 +42,61 @@ def administrador(request):
 @login_required
 def base(request):
     if request.method == 'POST':
-        Proyecto.objects.create(
+        proyecto=Proyecto.objects.create(
             nombre=request.POST.get('nombre'),
             estandard=request.POST.get('estandar'),
             file=request.FILES.get('fileInput')
         )
-        return redirect('excel.html') 
+        return redirect('excel', pk=proyecto.pk) 
 
     return render(request, 'hola.html')
-    
+
+
+
+@login_required
+def unir(request):
+    if User.objects.filter(id=request.session.get('usuario_id'), groups__name='admins').exists(): 
+        if request.method == 'POST':
+            maximo=float(request.POST.get('maximo'))
+            
+            medida = Medidas.objects.get(nombre__iexact=request.POST.get('medida'))
+            unidad = Unidades.objects.get(nombre__iexact=request.POST.get('unidades'))
+            
+            if MedidasUnidades.objects.filter(medida=medida, unidad=unidad).exists():
+                storage = get_messages(request)
+                list(storage) 
+                messages.error(request, f'La relación "{medida} - {unidad}" ya existe')
+                return redirect('unir')
+        
+            if maximo<=20:
+                step=0.1
+            elif maximo<=200:
+                step=1  
+            else:
+                step=10   
+                
+            MedidasUnidades.objects.create(
+                medida=medida,
+                unidad=unidad,
+                maximo=maximo,
+                minimo=float(request.POST.get('minimo')),
+                step=step
+                
+            )
+            return redirect('administrador') 
+        medidas = Medidas.objects.all()
+        relaciones = MedidasUnidades.objects.select_related('medida', 'unidad').all()
+        unidades = Unidades.objects.all()
+
+        return render(request, 'unir.html', {
+            'medidas': medidas,
+            'relaciones': relaciones,
+            'unidades': unidades,
+        })
+
+    else:
+        messages.error(request, 'Acceso denegado: No eres un administrador')
+        return redirect('login/1')
 
 
 def login_view(request, departamento):
@@ -79,8 +125,17 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def excel(request):
-    return render(request, 'excel.html')
+def excel(request, pk):
+    proyecto = get_object_or_404(Proyecto, pk=pk)
+    
+    df = pd.read_csv(proyecto.file.path)
+    
+    context = {
+        'proyecto': proyecto,
+        'columns': df.columns.tolist(),
+        'rows': df.values.tolist(),
+    }
+    return render(request, 'excel.html', context)
 
 def departamento(request):
     return render(request, 'departamento.html')

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ Hola }}{% endblock %}
+
+{% block content %}
+
+<div style="
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  background-color: #f5f5f5;
+">
+
+    
+    <div style="
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 720px;
+    ">
+        <form class="fs-form fs-layout__2-column" method="POST">
+            {% csrf_token %}
+            <fieldset>
+                <div>
+                    <label class="fs-label" for="medida">Medida</label>
+                    <input class="fs-input" type="text" id="medida" name="medida" onchange="compMedida()" placeholder="Escribe una medida..."required/>
+                </div>
+                <div class>
+                    <label class="fs-label" for="unidades">
+                        Unidades
+                    </label>
+                    <input class="fs-input" type="text" id="unidades" name="unidades" onchange="compUnidad()" placeholder="Escribe una unidad..."required/>
+                </div>
+            </fieldset>
+            <fieldset>
+                <div>
+                    <label class="fs-label" for="minimo">Minimo</label>
+                    <input class="fs-input" type="text" id="minimo" name="minimo"  placeholder="100"required/>
+                </div>
+                 <div>
+                    <label class="fs-label" for="maximo">Máximo</label>
+                    <input class="fs-input" type="text" id="maximo" name="maximo"  placeholder="200"required/>
+                </div>
+                
+            </fieldset>
+            <div class="fs-button-group">
+                <button class="fs-button" name="submit" id="botton" type="submit">Unir</button>
+            </div>
+        </form>
+    </div> 
+
+
+</div>
+
+<script>
+
+const medidasValidas = [{% for m in medidas %}"{{ m.nombre|lower }}",{% endfor %}];
+const unidadesValidas = [{% for u in unidades %}"{{ u.nombre|lower }}",{% endfor %}];
+    
+    function compMedida() {
+        var medida = document.getElementById('medida').value.trim();
+        medida=medida.toLowerCase();
+        if (!medidasValidas.includes(medida)) {
+            document.getElementById('botton').style.borderColor = 'red'
+
+        } else {
+            document.getElementById('botton').style.borderColor = 'green';
+        }
+        actualizarBoton();
+    }
+
+    function compUnidad() {
+        var unidad = document.getElementById('unidades').value.trim();
+        unidad=unidad.toLowerCase();
+        if (!unidadesValidas.includes(unidad)) {
+            document.getElementById('botton').style.borderColor = 'red'
+        } else {
+            document.getElementById('unidades').style.borderColor = 'green'
+        }
+        actualizarBoton();
+    }
+
+    function actualizarBoton() {
+        var medida = document.getElementById('medida').value.trim().toLowerCase();
+        var unidad = document.getElementById('unidades').value.trim().toLowerCase();
+        var boton = document.getElementById('botton');
+
+        if(!(medida=='') && !(unidad=='')){
+        
+            if (medidasValidas.includes(medida) && unidadesValidas.includes(unidad)) {
+                boton.disabled = false;
+                boton.style.backgroundColor = 'green';
+                boton.style.cursor = 'pointer';
+            } else {
+                boton.disabled = true;
+                boton.style.backgroundColor = 'red';
+                boton.style.cursor = 'not-allowed';
+            }
+        }
+    }
+</script>
+
+{% endblock %}

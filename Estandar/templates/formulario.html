@@ -33,12 +33,12 @@
         <form class="fs-form fs-layout__2-column" method="POST">
             {% csrf_token %}
             <div class="fs-field col-span-full">
-            <input class="fs-input" type="text" id="regla" name="regla" placeholder="Como se llama la regla..."></input>
+            <input class="fs-input" type="text" id="regla" name="regla" placeholder="Como se llama la regla..." required/>
             </div>
             <fieldset>
                 <div>
                     <label class="fs-label" for="nombre">Nombre</label>
-                    <input class="fs-input" type="text" id="nombre" name="nombre" oninput="actualizarUnidades()" placeholder="Escribe un nombre..."/>
+                    <input class="fs-input" type="text" id="nombre" name="nombre" oninput="actualizarUnidades()" placeholder="Escribe un nombre..."required/>
                 </div>
                 <div class>
                     <label class="fs-label" for="unidades">

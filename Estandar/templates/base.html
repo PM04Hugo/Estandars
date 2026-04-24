@@ -9,6 +9,11 @@
 </head>
 <body>
 
+{% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %}" role="alert" style="margin: 1rem;">
+        {{ message }}
+    </div>
+{% endfor %}
 
 <main>
     {% block content %}
