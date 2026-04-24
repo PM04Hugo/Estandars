@@ -34,7 +34,7 @@
                 {% csrf_token %}
 
                 <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                    <input type="file" id="fileInput" name="fileInput" style="display: none" accept=".csv"/>
+                    <input type="file" id="fileInput" name="fileInput" style="display: none" accept=".csv" required/>
                     <label for="fileInput" style="cursor: pointer; text-align: center;">
                         <img id="imgI" src="/static/img/plus.png" width="300" height="300" style="object-fit: contain;"/>
                         <br>
@@ -45,7 +45,7 @@
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
                     <div>
                         <label class="fs-label" for="nombre">Nombre</label>
-                        <input class="fs-input" type="text" id="nombre" name="nombre" placeholder="Escribe un nombre..." style="width: 100%;">
+                        <input class="fs-input" type="text" id="nombre" name="nombre" placeholder="Escribe un nombre..." style="width: 100%;" required/>
                     </div>
 
                     <div>
