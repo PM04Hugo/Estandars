@@ -27,6 +27,7 @@ urlpatterns = [
     path('login/<int:departamento>', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('estandar/', include('estandar.urls')),#al dejarlo vacio se entiende que es la ruta base
+    path('preview', views.preview, name='preview'),
     # Sería en este cacso la 127.0.0.1/8000
     ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     

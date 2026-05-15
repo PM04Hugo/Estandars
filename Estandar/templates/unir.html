@@ -23,18 +23,29 @@
         width: 100%;
         max-width: 720px;
     ">
+        <a  href="{% url 'administrador' %}">
+            <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
+        </a>
         <form class="fs-form fs-layout__2-column" method="POST">
             {% csrf_token %}
             <fieldset>
                 <div>
                     <label class="fs-label" for="medida">Medida</label>
                     <input class="fs-input" type="text" id="medida" name="medida" onchange="compMedida()" placeholder="Escribe una medida..."required/>
+                    <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <input class="fs-checkbox" name="crearMedida" type="checkbox" id="crearMedida" onchange="compMedida()"/>
+                        <label for="crearMedida" style="font-size: 0.85rem; color: gray;">Crear nueva medida</label>
+                    </div>
                 </div>
                 <div class>
                     <label class="fs-label" for="unidades">
                         Unidades
                     </label>
                     <input class="fs-input" type="text" id="unidades" name="unidades" onchange="compUnidad()" placeholder="Escribe una unidad..."required/>
+                    <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" name="crearUnidad" class="fs-checkbox" id="crearUnidad" onchange="compUnidad()"/>
+                        <label for="crearUnidad" style="font-size: 0.85rem; color: gray;">Crear nueva unidad</label>
+                    </div>
                 </div>
             </fieldset>
             <fieldset>
@@ -63,24 +74,61 @@ const medidasValidas = [{% for m in medidas %}"{{ m.nombre|lower }}",{% endfor %
 const unidadesValidas = [{% for u in unidades %}"{{ u.nombre|lower }}",{% endfor %}];
     
     function compMedida() {
+        var input = document.getElementById('medida');
         var medida = document.getElementById('medida').value.trim();
+        var crear = document.getElementById('crearMedida').checked;
         medida=medida.toLowerCase();
-        if (!medidasValidas.includes(medida)) {
-            document.getElementById('botton').style.borderColor = 'red'
-
+        if (crear) {
+            if(medidasValidas.includes(medida))
+            {
+                document.getElementById('medida').style.borderColor = 'red';
+                input.setCustomValidity("Esta medida ya existe");
+                input.reportValidity();
+            }
+            else{
+                document.getElementById('medida').style.borderColor = 'blue';
+                input.setCustomValidity("");
+            }
         } else {
-            document.getElementById('botton').style.borderColor = 'green';
+            if (!medidasValidas.includes(medida)) {
+                document.getElementById('botton').style.borderColor = 'red'
+                input.setCustomValidity("Esta medida no existe. Elige una de la lista");
+                input.reportValidity();
+
+            } else {
+                document.getElementById('botton').style.borderColor = 'green';
+                input.setCustomValidity("");
+            }
         }
         actualizarBoton();
     }
 
     function compUnidad() {
+        var input = document.getElementById('unidades');
         var unidad = document.getElementById('unidades').value.trim();
+        var crear = document.getElementById('crearUnidad').checked;
         unidad=unidad.toLowerCase();
-        if (!unidadesValidas.includes(unidad)) {
-            document.getElementById('botton').style.borderColor = 'red'
+        if (crear) {
+            if(unidadesValidas.includes(unidad))
+            {
+                document.getElementById('unidades').style.borderColor = 'red';
+                input.setCustomValidity("Esta medida ya existe");
+                input.reportValidity();
+            }
+            else{
+                document.getElementById('unidades').style.borderColor = 'blue';
+                input.setCustomValidity("");
+            }
         } else {
-            document.getElementById('unidades').style.borderColor = 'green'
+            if (!unidadesValidas.includes(unidad)) {
+                document.getElementById('botton').style.borderColor = 'red'
+                input.setCustomValidity("Esta unidad no existe. Elige una de la lista");
+                input.reportValidity();
+                
+            } else {
+                document.getElementById('unidades').style.borderColor = 'green'
+                input.setCustomValidity("");
+            }
         }
         actualizarBoton();
     }
@@ -89,10 +137,16 @@ const unidadesValidas = [{% for u in unidades %}"{{ u.nombre|lower }}",{% endfor
         var medida = document.getElementById('medida').value.trim().toLowerCase();
         var unidad = document.getElementById('unidades').value.trim().toLowerCase();
         var boton = document.getElementById('botton');
+        var crearMedida = document.getElementById('crearMedida').checked;
+        var crearUnidad = document.getElementById('crearUnidad').checked;
 
         if(!(medida=='') && !(unidad=='')){
+
+                //PAra que pueda haber una creado y otro no
+                var medidaOk = crearMedida || medidasValidas.includes(medida);
+                var unidadOk = crearUnidad || unidadesValidas.includes(unidad);
         
-            if (medidasValidas.includes(medida) && unidadesValidas.includes(unidad)) {
+            if (medidaOk && unidadOk) {
                 boton.disabled = false;
                 boton.style.backgroundColor = 'green';
                 boton.style.cursor = 'pointer';

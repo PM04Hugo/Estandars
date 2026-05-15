@@ -9,4 +9,5 @@ urlpatterns = [
     path('excel/<int:pk>/',views.excel, name='excel'),
     #path('administrador/unir/',views.unir, name='unir'),
     path('administrador/', include('estandar.ulsa')),
+    path('documento/', views.documento, name='documento'),
     ]

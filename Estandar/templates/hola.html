@@ -16,8 +16,6 @@
   padding: 4rem;
   background-color: #f5f5f5;
 ">
-
-    
     <div style="
         background: white;
         border-radius: 12px;
@@ -25,64 +23,129 @@
         padding: 2.5rem;
         width: 100%;
         max-width: 720px;
-        
     ">
-        <!--Tranformarlo en formulario?????? A lo mejor, asi comprobamos todo y hacemos el redirect hasta lo nuevo y pasamos la info -->
-        <!-- Hacerlo luego, si eso hacer lo del formato lo que dijo Yslem-->
-        
-            <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: row; align-items: flex-start; gap: 3rem;">
-                {% csrf_token %}
+        <a  href="{% url 'base' %}">
+            <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
+        </a>
+        <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: row; align-items: flex-start; gap: 3rem;">
+            {% csrf_token %}
 
-                <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                    <input type="file" id="fileInput" name="fileInput" style="display: none" accept=".csv" required/>
-                    <label for="fileInput" style="cursor: pointer; text-align: center;">
-                        <img id="imgI" src="/static/img/plus.png" width="300" height="300" style="object-fit: contain;"/>
-                        <br>
-                        <span class="fs-label" id="subirI" style="display: block; margin-top: 10px;">Subir imagen</span>
-                    </label>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                <input type="file" id="fileInput" name="fileInput" style="display: none" accept=".csv" required/>
+                
+                <!-- ── Imagen (se oculta cuando hay preview) ── -->
+                <label for="fileInput" id="fileLabel" style="cursor: pointer; text-align: center;">
+                    <img id="imgI" src="/static/img/plus.png" width="300" height="300" style="object-fit: contain;"/>
+                    <br>
+                    <span class="fs-label" id="subirI" style="display: block; margin-top: 10px;">Subir CSV</span>
+                </label>
+
+                <!-- ── Preview (aparece aquí cuando hay datos) ── -->
+                <div id="previewContainer" style="display:none; width:100%; overflow-x:auto;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                        <!-- Al pulsar vuelve a mostrar el label para cambiar el archivo -->
+                        <label for="fileInput" id="previewNombre" style="cursor:pointer; font-size:0.85rem; color:#666; margin:0;"></label>
+                        <div id="previewSpinner" class="spinner-border spinner-border-sm text-primary" role="status" style="display:none;"></div>
+                    </div>
+                    <div id="previewError" class="alert alert-danger py-1" style="display:none; font-size:0.8rem;"></div>
+                    <div id="previewTableWrapper"></div>
+                </div>
+            </div>
+
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
+                <div>
+                    <label class="fs-label" for="nombre">Nombre</label>
+                    <input class="fs-input" type="text" id="nombre" name="nombre" placeholder="Escribe un nombre..." style="width: 100%;" required/>
                 </div>
 
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div>
-                        <label class="fs-label" for="nombre">Nombre</label>
-                        <input class="fs-input" type="text" id="nombre" name="nombre" placeholder="Escribe un nombre..." style="width: 100%;" required/>
-                    </div>
-
-                    <div>
-                        <label class="fs-label" for="unidades">Estandar</label>
-                        <select class="fs-select" id="estandar" name="estandar" style="width: 100%;">
-                            <option value="s">S</option>
-                            </select>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="padding: 0.75rem; font-weight: bold; margin-top: 1rem;">
-                        Crear Proyecto
-                    </button>
+                <div>
+                    <label class="fs-label" for="unidades">Estandar</label>
+                    <select class="fs-select" id="estandar" name="estandar" style="width: 100%;">
+                        <option value="s">S</option>
+                    </select>
                 </div>
-            </form>
 
-        </div>
+                <button type="submit" class="btn btn-primary" style="padding: 0.75rem; font-weight: bold; margin-top: 1rem;">
+                    Crear Proyecto
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
-    //from django.core.validators import FileExtensionValidator
-    
-    const fileInput = document.getElementById('fileInput');
-    const imgI = document.getElementById('imgI');
-    const subirI = document.getElementById('subirI');
-
+    const fileInput          = document.getElementById('fileInput');
+    const imgI               = document.getElementById('imgI');
+    const subirI             = document.getElementById('subirI');
+    const fileLabel          = document.getElementById('fileLabel');
+    const previewContainer   = document.getElementById('previewContainer');
+    const previewSpinner     = document.getElementById('previewSpinner');
+    const previewError       = document.getElementById('previewError');
+    const previewTableWrapper= document.getElementById('previewTableWrapper');
+    const previewNombre      = document.getElementById('previewNombre');
 
     fileInput.addEventListener('change', function() {
-
-        if(fileInput.files.length > 0) {
+        if (fileInput.files.length > 0) {
             subirI.textContent = fileInput.files[0].name;
             imgI.src = "/static/img/check2.png";
-        }else{
+            fetchPreview();
+        } else {
             subirI.textContent = 'Subir imagen';
             imgI.src = "/static/img/plus.png";
+            fileLabel.style.display = 'block';
+            previewContainer.style.display = 'none';
         }
     });
+
+    document.getElementById('estandar').addEventListener('change', function() {
+        if (fileInput.files.length > 0) fetchPreview();
+    });
+
+    function fetchPreview() {
+        // Cambia imagen por preview
+        fileLabel.style.display        = 'none';
+        previewContainer.style.display = 'block';
+        previewSpinner.style.display   = 'inline-block';
+        previewError.style.display     = 'none';
+        previewTableWrapper.innerHTML  = '';
+        previewNombre.textContent      = '📄 ' + fileInput.files[0].name + ' — click para cambiar';
+
+        const formData = new FormData();
+        formData.append('fileInput', fileInput.files[0]);
+        formData.append('estandar',  document.getElementById('estandar').value);
+        formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+        fetch('/preview', { method: 'POST', body: formData })
+            .then(r => { if (!r.ok) throw new Error(`Error ${r.status}`); return r.json(); })
+            .then(data => {
+                previewSpinner.style.display = 'none';
+                if (data.error) {
+                    previewError.textContent   = data.error;
+                    previewError.style.display = 'block';
+                    return;
+                }
+                let html = '<table class="table table-sm table-bordered table-hover" style="font-size:0.75rem;"><thead class="table-dark"><tr>';
+                data.columns.forEach(c => html += `<th>${c}</th>`);
+                html += '</tr></thead><tbody>';
+                data.rows.forEach(row => {
+                    html += '<tr>';
+                    row.forEach(cell => html += `<td>${cell ?? ''}</td>`);
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+                previewTableWrapper.innerHTML = html;
+            })
+            .catch(err => {
+                previewSpinner.style.display   = 'none';
+                previewError.textContent       = err.message;
+                previewError.style.display     = 'block';
+            });
+    }
+
+    function getCookie(name) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : '';
+    }
 </script>
 </body>
 </html>

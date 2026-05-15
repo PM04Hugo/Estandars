@@ -6,6 +6,9 @@ from .models import Medidas, Regla,  MedidasUnidades, Proyecto, Unidades
 from django.contrib.auth.models import User, Group
 from django.contrib.messages import get_messages
 import pandas as pd
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import io
 
 
 def formulario(request):
@@ -41,6 +44,10 @@ def administrador(request):
 
 @login_required
 def base(request):
+    return render(request, 'bases.html')
+
+@login_required
+def documento(request):
     if request.method == 'POST':
         proyecto=Proyecto.objects.create(
             nombre=request.POST.get('nombre'),
@@ -58,16 +65,37 @@ def unir(request):
     if User.objects.filter(id=request.session.get('usuario_id'), groups__name='admins').exists(): 
         if request.method == 'POST':
             maximo=float(request.POST.get('maximo'))
+            minimo=float(request.POST.get('minimo'))
             
-            medida = Medidas.objects.get(nombre__iexact=request.POST.get('medida'))
-            unidad = Unidades.objects.get(nombre__iexact=request.POST.get('unidades'))
+            
+            
+            crear_medida = request.POST.get('crearMedida') == 'on'
+            crear_unidad = request.POST.get('crearUnidad') == 'on'
+            nombre_medida = request.POST.get('medida')
+            nombre_unidad = request.POST.get('unidades')
+    
+            if crear_medida:
+                medida, _ = Medidas.objects.get_or_create(nombre=nombre_medida)
+            else:
+                medida = Medidas.objects.get(nombre__iexact=request.POST.get('medida'))
+            
+            if crear_unidad:
+                unidad, _ = Unidades.objects.get_or_create(nombre=nombre_unidad)
+            else:
+                unidad = Unidades.objects.get(nombre__iexact=request.POST.get('unidades'))
             
             if MedidasUnidades.objects.filter(medida=medida, unidad=unidad).exists():
                 storage = get_messages(request)
                 list(storage) 
                 messages.error(request, f'La relación "{medida} - {unidad}" ya existe')
                 return redirect('unir')
-        
+            
+            elif maximo<=minimo :
+                storage = get_messages(request)
+                list(storage) 
+                messages.error(request, f'El valor máximo debe ser mayor que el mínimo')
+                return redirect('unir')
+
             if maximo<=20:
                 step=0.1
             elif maximo<=200:
@@ -79,7 +107,7 @@ def unir(request):
                 medida=medida,
                 unidad=unidad,
                 maximo=maximo,
-                minimo=float(request.POST.get('minimo')),
+                minimo=minimo,
                 step=step
                 
             )
@@ -115,7 +143,7 @@ def login_view(request, departamento):
                     #request.session['departamento'] = user.departamento
                     return redirect('/estandar/')
                 else:
-                    messages.error(request, 'Departamento incorrecto')
+                    messages.errorx(request, 'Departamento incorrecto')
         else:
             messages.error(request, 'Credenciales inválidas o departamento incorrecto')
 
@@ -128,7 +156,7 @@ def logout_view(request):
 def excel(request, pk):
     proyecto = get_object_or_404(Proyecto, pk=pk)
     
-    df = pd.read_csv(proyecto.file.path)
+    df = pd.read_csv(proyecto.file.path, sep=';')
     
     context = {
         'proyecto': proyecto,
@@ -183,3 +211,49 @@ def registro_view(request):
     #return render(request, 'registro.html')
 
 # Create your views here.
+
+
+@require_POST
+def preview(request):
+    csv_file = request.FILES.get('fileInput')
+    estandar = request.POST.get('estandar')
+
+    if not csv_file or not estandar:
+        return JsonResponse({'error': 'Faltan datos.'}, status=400)
+
+    try:
+        df = pd.read_csv(io.BytesIO(csv_file.read()), sep=';')
+        df = df.fillna('')  # ← sustituye NaN por string vacío directamente
+        df = df.iloc[:20, :5]
+
+        return JsonResponse({
+            'columns': df.columns.tolist(),
+            'rows':    df.head(20).values.tolist(),
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def crear(request):
+    return render(request, 'crear.html', {
+        'reglas': Regla.objects.all()
+    })
+    
+def verificar(request):
+    ids = request.POST.getlist('reglas') 
+    reglas = Regla.objects.filter(id__in=ids)
+    return render(request, 'verificar.html', {'reglas': reglas})
+
+@require_POST
+def tabla_preview(request):
+    ids = request.POST.getlist('reglas')
+    reglas = Regla.objects.filter(id__in=ids)
+    reglas_ordenadas = sorted(reglas, key=lambda r: ids.index(str(r.id)))
+
+    columns = [r.nombre for r in reglas_ordenadas]
+    df = pd.DataFrame(columns=columns, index=range(5))  # ← DataFrame vacío con 5 filas
+    df = df.fillna('')
+
+    return JsonResponse({
+        'columns': df.columns.tolist(),
+        'rows':    df.values.tolist(),
+    })

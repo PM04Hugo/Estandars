@@ -1,0 +1,160 @@
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reglas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+<div class="layout">
+
+    
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                Seleccionadas
+                <span class="count-badge" id="countBadge">0</span>
+            </div>
+        </div>
+        <div class="panel-body" id="selectedList">
+            <p class="empty-msg" id="emptyMsg">Ninguna regla seleccionada</p>
+        </div>
+        <div class="panel-header" style="border-top: 1px solid var(--color-background); border-bottom: none;">
+            <button class="fs-button" id="btnContinuar" disabled onclick="continuar()">
+                Continuar →
+            </button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">Reglas disponibles</div>
+            <input class="fs-input" type="text" id="searchInput"
+                   placeholder="Buscar por nombre, medida o unidad…"
+                   style="width: 100%;">
+        </div>
+        <div class="panel-body" id="reglasList">
+            {% for regla in reglas %}
+            <div class="regla-card"
+                 id="card-{{ regla.id }}"
+                 data-id="{{ regla.id }}"
+                 data-nombre="{{ regla.nombre }}"
+                 data-medida="{{ regla.nombre_medida }}"
+                 data-unidad="{{ regla.nombre_unidad }}"
+                 data-minimo="{{ regla.minimo }}"
+                 data-maximo="{{ regla.maximo }}"
+                 onclick="toggleRegla(this)">
+                <div class="regla-nombre">{{ regla.nombre }}</div>
+                <div class="regla-desc">{{ regla.descripcion }}</div>
+                <div class="regla-badges">
+                    <span class="regla-badge">{{ regla.nombre_medida }} — {{ regla.nombre_unidad }}</span>
+                    <span class="regla-badge">Mín {{ regla.minimo }}</span>
+                    <span class="regla-badge">Máx {{ regla.maximo }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="empty-msg">No hay reglas disponibles</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+<script>
+
+    //Vamos a dividirlo para entenderlo
+    const selected = {}; //Array vacio, este tendrá las reglas seleccionads por el usuario
+
+    function toggleRegla(card) { //Cuando clicamos en un elemento de la lista, lo que hacemos es llamar a esto
+        const id = card.dataset.id; //Pasa el id
+        selected[id] ? deselect(id) : select(id, card.dataset);
+    }
+
+    function select(id, data) {//Y llama a select el cual mete la regla en nuestra lista de reglas para usar
+        selected[id] = data;
+        document.getElementById('card-' + id).classList.add('selected');
+        renderSelected();
+    }
+
+    function deselect(id) { //En caso de volver a darle se va a deselect según si estaba o no en la lista
+        delete selected[id];
+        document.getElementById('card-' + id)?.classList.remove('selected');
+        renderSelected();
+    }
+
+    function renderSelected() { //Despues de ver lo añadidio al igual que IGU hay q volver a hacer la tabla
+        const list  = document.getElementById('selectedList');
+        const empty = document.getElementById('emptyMsg');
+        const count = Object.keys(selected).length;
+
+        document.getElementById('countBadge').textContent = count;
+        list.querySelectorAll('.sel-item').forEach(el => el.remove());
+
+        if(count==0){
+             document.getElementById('btnContinuar').disabled = true;
+        }
+        else{
+            document.getElementById('btnContinuar').disabled = false;
+        }
+
+        if (count === 0) { empty.style.display = 'block'; return; }
+        empty.style.display = 'none';
+
+        Object.values(selected).forEach(data => {
+            const div = document.createElement('div');
+            div.className = 'sel-item';
+            div.innerHTML = `
+                <div>
+                    <div class="sel-nombre">${data.nombre}</div>
+                    <div class="sel-sub">${data.medida} · ${data.unidad} · ${data.minimo}–${data.maximo}</div>
+                </div>
+                <button class="sel-remove" onclick="deselect('${data.id}')">✕</button>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function () { //Nos ayuda a buscar por id
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.regla-card').forEach(card => {
+            const texto = (card.dataset.nombre + card.dataset.medida + card.dataset.unidad).toLowerCase();
+            card.classList.toggle('hidden', !texto.includes(q));
+        });
+    });
+
+
+    function continuar() {
+    const ids = Object.keys(selected); // ['1', '3', '5', ...]
+    
+    // Crea un form oculto y hace POST a la siguiente página
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{% url 'verificar' %}";  // tu URL destino
+
+    // CSRF
+    const csrf = document.createElement('input');
+    csrf.type  = 'hidden';
+    csrf.name  = 'csrfmiddlewaretoken';
+    csrf.value = getCookie('csrftoken');
+    form.appendChild(csrf);
+
+    // Un input por cada ID seleccionado
+    ids.forEach(id => {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = 'reglas';  // en la view: request.POST.getlist('reglas')
+        input.value = id;
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : '';
+}
+</script>
+</body>
+</html>
