@@ -61,7 +61,9 @@
                 <div>
                     <label class="fs-label" for="unidades">Estandar</label>
                     <select class="fs-select" id="estandar" name="estandar" style="width: 100%;">
-                        <option value="s">S</option>
+                        {% for estandar in estandares %}
+                            <option value="{{ estandar.id }}">{{ estandar.nombre }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
@@ -100,6 +102,21 @@
     document.getElementById('estandar').addEventListener('change', function() {
         if (fileInput.files.length > 0) fetchPreview();
     });
+
+function estandares(){
+
+    const selectEstandar = document.getElementById("estandar");
+
+    datos[clave].unidades.forEach(u => {
+        const option = document.createElement("option");
+        option.value = u.nombre;
+        option.textContent = u.nombre;
+        option.dataset.min  = u.min;
+        option.dataset.max  = u.max;
+        option.dataset.step = u.step;
+        selectUnidades.appendChild(option);
+    });
+}
 
     function fetchPreview() {
         // Cambia imagen por preview
@@ -146,6 +163,7 @@
         const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
         return match ? decodeURIComponent(match[2]) : '';
     }
+    estandar();
 </script>
 </body>
 </html>

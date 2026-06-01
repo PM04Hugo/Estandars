@@ -50,8 +50,12 @@
             </div>
         </div>
         <div class="panel-header" style="border-top: 1px solid var(--color-background); border-bottom: none;">
-            <button class="fs-button" id="btnContinuar" disabled onclick="continuar()">
-                Continuar →
+            <div>
+                <label class="fs-label" for="nombreEstandar">Nombre del estándar</label>
+                <input class="fs-input" type="text" id="nombreEstandar" placeholder="Escribe un nombre..." style="width: 100%;" required/>
+            </div>
+            <button class="fs-button" id="btnContinuar" onclick="continuar()">
+                Crear
             </button>
         </div>
     </div>
@@ -121,21 +125,33 @@ function fetchTabla() {
 }
 
 
-    function continuar() {
-    const ids = [...document.querySelectorAll('#reglasList .regla-card-drag.selected')]
-                    .map(card => card.dataset.id);
+function continuar() {
+    const nombreid= document.getElementById("nombreEstandar");
+    const nombre = document.getElementById('nombreEstandar').value.trim();
+        if (!nombre) {
+            document.getElementById('nombreEstandar').focus();
+            return;
+        }
+    const ids = [...document.querySelectorAll('#reglasList .regla-card-drag')]
+                .map(card => card.dataset.id);
     
     // Crea un form oculto y hace POST a la siguiente página
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = "{% url 'verificar' %}";  // tu URL destino
+    form.action = "{% url 'crear_estandar' %}";  // tu URL destino
 
-    // CSRF
+    
     const csrf = document.createElement('input');
     csrf.type  = 'hidden';
     csrf.name  = 'csrfmiddlewaretoken';
     csrf.value = getCookie('csrftoken');
-    form.appendChild(csrf);
+    form.appendChild(csrf);     
+
+    const Nombre = document.createElement('input');
+    Nombre.type  = 'hidden';
+    Nombre.name  = 'nombre';
+    Nombre.value = nombre;
+    form.appendChild(Nombre);
 
     // Un input por cada ID seleccionado
     ids.forEach(id => {

@@ -25,9 +25,15 @@
         max-width: 720px;
     ">
         <div style="display: flex; align-items: center; gap: 2rem; ">
-        <a  href="{% url 'base' %}">
-            <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
-        </a>
+        {% if admin %}
+            <a  href="{% url 'administrador' %}">
+                <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
+            </a>
+        {%else%}
+            <a  href="{% url 'base' %}">
+                <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
+            </a>
+        {% endif %}
         <h2 style="margin: 0;">Regla</h2>
         </div>
         <form class="fs-form fs-layout__2-column" method="POST">

@@ -2,13 +2,19 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Medidas, Regla,  MedidasUnidades, Proyecto, Unidades
+from .models import Medidas, Regla,  MedidasUnidades, Proyecto, Unidades, Estandar
 from django.contrib.auth.models import User, Group
 from django.contrib.messages import get_messages
 import pandas as pd
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import io
+from groq import Groq
+import csv, io
+from django.conf import settings
+
+client = Groq(api_key=settings.GROQ_API_KEY)
+
 
 
 def formulario(request):
@@ -21,14 +27,20 @@ def formulario(request):
             minimo=float(request.POST.get('minimo')),
             maximo=float(request.POST.get('maximo')),
         )
+        if request.user.groups.filter(name='admins').exists():
+            return redirect('administrador')
         return redirect('base')
 
     medidas = Medidas.objects.all()
     relaciones = MedidasUnidades.objects.select_related('medida', 'unidad').all()
+    es_admin = request.user.groups.filter(name='admins').count() > 0
+    print("Usuario actual:", request.user.username)
+    print("Grupos reales en esta BD:", list(request.user.groups.values_list('name', flat=True)))
 
     return render(request, 'formulario.html', {
         'medidas': medidas,
         'relaciones': relaciones,
+        'admin': es_admin,
     })
 
 def form(request): #Formulario solo podría x usuario no se como hacerlo aún
@@ -49,16 +61,74 @@ def base(request):
 @login_required
 def documento(request):
     if request.method == 'POST':
-        proyecto=Proyecto.objects.create(
-            nombre=request.POST.get('nombre'),
-            estandard=request.POST.get('estandar'),
-            file=request.FILES.get('fileInput')
+            nombre=request.POST.get('nombre')
+            estandar_id=int(request.POST.get('estandar'))
+            csv_file=request.FILES.get('fileInput')
+            
+            estandar  = Estandar.objects.prefetch_related('reglas').get(id=estandar_id)
+            reglas_dict = {r.id: r for r in estandar.reglas.all()}
+            reglas  = [reglas_dict[id] for id in estandar.orden if id in reglas_dict]
+
+            #Sacamos todas las reglas
+            reglas_info = "\n".join([
+                f"{i+1}. {r.nombre}: medida={r.nombre_medida}, unidad={r.nombre_unidad}, min={r.minimo}, max={r.maximo}"
+                for i, r in enumerate(reglas)
+            ])
+
+            contenido_csv  = csv_file.read().decode('utf-8')
+            csv_file.seek(0)
+            print("Orden de reglas:", [r.nombre for r in reglas])
+            prompt = f"""
+            Con el siguiente CSV
+
+            {contenido_csv}
+
+            Y el siguiente estándar con estas reglas en orden
+            {reglas_info}
+
+            Tienes que:
+            1. Reordena las columnas del CSV para que coincidan con el orden de las reglas que te paso
+            2. Renombra las columnas que coincidan con alguna regla, si no coinciden dejalas despúes de las reglas en orden
+            3. Transformar las unidades de cada columna para que coincidan con las unidades de las reglas, en caso de ser necesario
+            4. Devuelve ÚNICAMENTE el CSV resultante separado por ; sin explicaciones ni markdown
+            """
+            
+            client   = Groq(api_key=settings.GROQ_API_KEY)
+            respuesta = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            csv_transformado = respuesta.choices[0].message.content.strip()
+            
+            
+
+            from django.core.files.base import ContentFile
+            proyecto = Proyecto.objects.create(
+                nombre=nombre,
+                estandard=estandar.nombre,
+            )
+            proyecto.file.save(
+                f"{nombre}.csv",
+                ContentFile(csv_transformado.encode('utf-8'))
+            
+            )
+            return redirect('excel', pk=proyecto.pk) 
+
+    estandares = Estandar.objects.all()
+    return render(request, 'hola.html' , {'estandares': estandares} )
+
+def crear_estandar(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        reglas    = request.POST.getlist('reglas')
+        estandar = Estandar.objects.create(
+            nombre=nombre,
+            orden=[int(id) for id in reglas]  
         )
-        return redirect('excel', pk=proyecto.pk) 
+        estandar.reglas.set(Regla.objects.filter(id__in=reglas))
+        return redirect('administrador')
 
-    return render(request, 'hola.html')
-
-
+    return redirect('departamento')
 
 @login_required
 def unir(request):
@@ -135,11 +205,13 @@ def login_view(request, departamento):
         if user is not None:
             id = user.groups.values_list('id', flat=True).first()
             if id==4:
+                login(request, user)
                 request.session['usuario_id'] = user.id
                 return redirect('/estandar/administrador/')
             else:
                 if id == departamento:
                     request.session['usuario_id'] = user.id
+                    login(request, user)
                     #request.session['departamento'] = user.departamento
                     return redirect('/estandar/')
                 else:

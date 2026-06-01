@@ -49,5 +49,11 @@ class Proyecto(models.Model):
     def __str__(self):
         return self.nombre
 
+class Estandar(models.Model):
+    nombre = models.CharField(max_length=20)
+    reglas = models.ManyToManyField(Regla)
+    orden  = models.JSONField(default=list)
     
+    def __str__(self):
+        return self.nombre   
     
