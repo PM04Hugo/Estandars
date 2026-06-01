@@ -13,7 +13,7 @@ from groq import Groq
 import csv, io
 from django.conf import settings
 
-client = Groq(api_key=settings.GROQ_API_KEY)
+#client = Groq(api_key=settings.GROQ_API_KEY)
 
 
 
@@ -61,6 +61,8 @@ def base(request):
 @login_required
 def documento(request):
     if request.method == 'POST':
+            print("API KEY:", settings.GROQ_API_KEY)
+            client = Groq(api_key=settings.GROQ_API_KEY) 
             nombre=request.POST.get('nombre')
             estandar_id=int(request.POST.get('estandar'))
             csv_file=request.FILES.get('fileInput')
