@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="layout" style="grid-template-columns: 1fr; max-width: 900px; margin: 0 auto;">
+  <div class="panel">
+    <div class="panel-header">
+        {% load user_tags %}
+        <a href="{% if request.user|es_admin %}{% url 'administrador' %}{% else %}{% url 'base' %}{% endif %}">
+            ← Volver
+        </a>
+        <div class="panel-title">
+            Proyectos disponibles
+            <span class="count-badge">{{ proyectos|length }}</span>
+        </div>
+    </div>
+    <div class="panel-body">
+      {% for proyecto in proyectos %}
+      <a href="{% url 'excel' proyecto.pk %}" style="text-decoration: none;">
+        <div class="regla-card">
+          <div class="regla-nombre">{{ proyecto.nombre }}</div>
+          <div class="regla-badges">
+            <span class="regla-badge">{{ proyecto.estandard }}</span>
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <p class="empty-msg">No hay proyectos disponibles.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

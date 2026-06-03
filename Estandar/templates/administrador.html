@@ -1,38 +1,87 @@
-<div style="
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem;
-  background-color: #f5f5f5;
-">
+<style>
+  .menu-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f4f8;
+    padding: 2rem;
+  }
 
-    
-    <div style="
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-        padding: 2.5rem;
-        width: 100%;
-        max-width: 720px;
-    ">
-        <a href="{% url 'unir' %}">
-           <button type="submit" class="btn btn-primary w-100">
-                Unir
-            </button>
-        </a>
-        <a href="{% url 'crear' %}">
-           <button type="submit" class="btn btn-primary w-100">
-                Estandar
-            </button>
-        </a>
-        <a href="{% url 'formulario' %}">
-           <button type="submit" class="btn btn-primary w-100">
-                Regla
-            </button>
-        </a>
+  .menu-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 360px;
+  }
 
-    </div> 
+  .menu-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+  }
 
+  .menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-default);
+    text-decoration: none;
+    color: var(--color-text-default);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .menu-item:hover {
+    background: var(--color-background);
+    border-color: var(--color-border-active);
+    box-shadow: 0 2px 8px rgba(35,73,76,0.08);
+  }
+
+  .menu-arrow {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    transition: transform 0.15s;
+  }
+
+  .menu-item:hover .menu-arrow {
+    transform: translateX(3px);
+  }
+</style>
+
+<div class="menu-page">
+  <div class="menu-card">
+    <div class="menu-title">Administración</div>
+    <div class="menu-list">
+      <a href="{% url 'unir' %}" class="menu-item">
+        Unir <span class="menu-arrow">→</span>
+      </a>
+      <a href="{% url 'crear' %}" class="menu-item">
+        Estándar <span class="menu-arrow">→</span>
+      </a>
+      <a href="{% url 'formulario' %}" class="menu-item">
+        Regla <span class="menu-arrow">→</span>
+      </a>
+      <a href="{% url 'documento' %}" class="menu-item">
+        Crear <span class="menu-arrow">→</span>
+      </a>
+      <a href="{% url 'abrir' %}" class="menu-item">
+        Abrir <span class="menu-arrow">→</span>
+      </a>
+    </div>
+  </div>
 </div>

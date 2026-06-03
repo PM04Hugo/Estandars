@@ -24,9 +24,17 @@
         width: 100%;
         max-width: 720px;
     ">
-        <a  href="{% url 'base' %}">
-            <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
-        </a>
+        {% load user_tags %}
+        {% if request.user|es_admin %}
+            <a  href="{% url 'administrador' %}">
+                <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
+            </a>
+        {% else %}
+            <a  href="{% url 'base' %}">
+                <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
+            </a>
+        {% endif %}
+        
         <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: row; align-items: flex-start; gap: 3rem;">
             {% csrf_token %}
 

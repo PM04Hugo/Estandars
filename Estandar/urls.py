@@ -10,4 +10,5 @@ urlpatterns = [
     #path('administrador/unir/',views.unir, name='unir'),
     path('administrador/', include('estandar.ulsa')),
     path('documento/', views.documento, name='documento'),
+    path('abrir/', views.abrir, name='abrir'),
     ]

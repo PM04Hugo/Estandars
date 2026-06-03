@@ -13,10 +13,8 @@ from groq import Groq
 import csv, io
 from django.conf import settings
 
-#client = Groq(api_key=settings.GROQ_API_KEY)
 
-
-
+@login_required
 def formulario(request):
     if request.method == 'POST':
         Regla.objects.create(
@@ -227,6 +225,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+@login_required
 def excel(request, pk):
     proyecto = get_object_or_404(Proyecto, pk=pk)
     
@@ -307,11 +306,13 @@ def preview(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+@login_required
 def crear(request):
     return render(request, 'crear.html', {
         'reglas': Regla.objects.all()
     })
-    
+
+@login_required   
 def verificar(request):
     ids = request.POST.getlist('reglas') 
     reglas = Regla.objects.filter(id__in=ids)
@@ -331,3 +332,11 @@ def tabla_preview(request):
         'columns': df.columns.tolist(),
         'rows':    df.values.tolist(),
     })
+
+@login_required
+def abrir(request):
+    proyectos = Proyecto.objects.all()
+    return render(request, 'abrir.html', {'proyectos': proyectos})
+
+
+

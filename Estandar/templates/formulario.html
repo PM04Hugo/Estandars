@@ -25,11 +25,12 @@
         max-width: 720px;
     ">
         <div style="display: flex; align-items: center; gap: 2rem; ">
-        {% if admin %}
+        {% load user_tags %}
+        {% if request.user|es_admin %}
             <a  href="{% url 'administrador' %}">
                 <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
             </a>
-        {%else%}
+        {% else %}
             <a  href="{% url 'base' %}">
                 <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
             </a>

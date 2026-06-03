@@ -12,11 +12,16 @@
     
     <div class="panel">
         <div class="panel-header">
+            {% load user_tags %}
+            <a href="{% if request.user|es_admin %}{% url 'administrador' %}{% else %}{% url 'base' %}{% endif %}">
+                ← Volver
+            </a>
             <div class="panel-title">
                 Seleccionadas
                 <span class="count-badge" id="countBadge">0</span>
             </div>
         </div>
+            
         <div class="panel-body" id="selectedList">
             <p class="empty-msg" id="emptyMsg">Ninguna regla seleccionada</p>
         </div>
