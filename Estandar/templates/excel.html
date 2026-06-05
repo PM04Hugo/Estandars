@@ -2,46 +2,105 @@
 {% load static %}
 
 {% block content %}
+<div class="container-fluid py-4">
 
-<div style="padding: 2rem;">
-    <h4>{{ proyecto.nombre }}</h4>
-    <small style="color: gray;">Estándar: {{ proyecto.estandard }}</small>
-    
-    <div style="margin-top: 2rem; overflow-x: auto;">
-        <table id="data-table" class="display" style="width:100%">
-            <thead>
-                <tr>
-                    {% for col in columns %}
-                        <th>{{ col }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in rows %}
-                <tr>
-                    {% for cell in row %}
-                        <td>{{ cell }}</td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="mb-1 fw-semibold">{{ proyecto.nombre }}</h4>
+      <small class="text-muted">
+        <i class="bi bi-patch-check me-1"></i>Estándar: {{ proyecto.estandard }}
+      </small>
     </div>
+  </div>
+
+  <div class="d-flex gap-3 mb-3 small">
+    <span class="badge bg-success px-3 py-2">OK</span>
+    <span class="badge bg-warning text-dark px-3 py-2">Cuidado</span>
+    <span class="badge bg-danger px-3 py-2">Urgente</span>
+    <span class="badge px-3 py-2" style="background:#222;color:#fff">Peligro</span>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table id="data-table" class="table table-hover table-bordered align-middle mb-0" style="width:100%">
+          <thead>
+            <tr>
+              {% for col in columns %}
+                {% if forloop.first %}
+                  <th class="col-destacada">
+                    <i class="bi bi-person-fill me-1"></i>{{ col }}
+                  </th>
+                {% else %}
+                  <th class="col-destacada text-uppercase text-center small">{{ col }}</th>
+                {% endif %}
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row, nivel in rows_con_nivel %}
+            <tr data-nivel="{{ nivel }}">
+              {% for cell in row %}
+                {% if forloop.first %}
+                  <td class="col-destacada fw-semibold texto-{{ nivel }}">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="dot-nivel dot-{{ nivel }}"></span>
+                      {{ cell }}
+                    </div>
+                  </td>
+                {% else %}
+                  <td class="text-center">{{ cell }}</td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.css">
+<style>
+  .col-destacada {
+    background-color: hsl(212, 84%, 52%) !important;
+    color: hsla(0, 0%, 100%, 0.94) !important;
+  }
+
+  .dot-nivel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-ok      { background: #198754; }
+  .dot-cuidado { background: #ffc107; }
+  .dot-urgente { background: #dc3545; }
+  .dot-peligro { background: #222;    }
+
+  .texto-ok      { color: hsla(0, 0%, 100%, 0.94) !important; }
+  .texto-cuidado { color: #ffc107 !important; }
+  .texto-urgente { color: hsla(354, 100%, 40%, 0.81) !important; }
+  .texto-peligro { color: #aaaaaa !important; }
+
+  .table-hover tbody tr:hover td { background-color: hsl(212, 20%, 88%) !important; }
+  .table-hover tbody tr:hover td.col-destacada { background-color: hsl(212, 84%, 45%) !important; }
+</style>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.css">
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/2.3.7/js/dataTables.js"></script>
-
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.bootstrap5.js"></script>
 <script>
-    $(document).ready(function () {
-        $('#data-table').DataTable({
-            pageLength: 25,
-            //language: {
-              //  url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-            //}
-        });
+  $(document).ready(function () {
+    $('#data-table').DataTable({
+      pageLength: 25,
+      language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
     });
+  });
 </script>
-
 {% endblock %}

@@ -1,0 +1,11 @@
+Paciente;Sistolica (mmHg);Colesterol (mmol/L);Temperatura (F);Oxígeno en Sangre (%);Glucosa (mg/dL);Diastolica (mmHg);Frecuencia Cardiaca (bpm)
+Ana García;118;4.8;(36.6*9/5)+32;98;95;76;72
+Carlos Martínez;145;6.2;(36.9*9/5)+32;97;210;95;88
+Sofía López;112;5.1;(37.1*9/5)+32;99;88;72;68
+Miguel Rodríguez;160;7.8;(36.4*9/5)+32;95;320;105;95
+Elena Fernández;120;4.5;(38.9*9/5)+32;98;102;80;101
+Javier Torres;108;3.9;(36.7*9/5)+32;99;78;68;65
+Lucía Sánchez;115;5.3;(36.5*9/5)+32;92;55;75;110
+Pablo Díaz;135;6.9;(36.8*9/5)+32;97;115;88;82
+Isabel Moreno;170;8.4;(35.8*9/5)+32;88;430;110;115
+Andrés Jiménez;122;4.2;(37.0*9/5)+32;99;99;78;74

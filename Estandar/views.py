@@ -87,9 +87,9 @@ def documento(request):
             {reglas_info}
 
             Tienes que:
-            1. Reordena las columnas del CSV para que coincidan con el orden de las reglas que te paso
+            1. Reordena las columnas del CSV para que coincidan con el orden de las reglas que te paso, deja siempre los pacientes en la primera columna
             2. Renombra las columnas que coincidan con alguna regla, si no coinciden dejalas despúes de las reglas en orden
-            3. Transformar las unidades de cada columna para que coincidan con las unidades de las reglas, en caso de ser necesario
+            3. Transformar las unidades de cada columna para que coincidan con las unidades de las reglas, pasalas ya convertidas, no con formulas
             4. Devuelve ÚNICAMENTE el CSV resultante separado por ; sin explicaciones ni markdown
             """
             
@@ -228,13 +228,51 @@ def logout_view(request):
 @login_required
 def excel(request, pk):
     proyecto = get_object_or_404(Proyecto, pk=pk)
+    UMBRAL_CUIDADO  = 1
+    UMBRAL_URGENTE  = 3
+    UMBRAL_PELIGRO  = 5
     
     df = pd.read_csv(proyecto.file.path, sep=';')
+
+    estandar = Estandar.objects.prefetch_related('reglas').filter(nombre=proyecto.estandard).first()
+    reglas = {}
+    if estandar:
+        reglas = {r.nombre_medida.strip().lower(): r for r in estandar.reglas.all()}
+      
+    #print("REGLAS KEYS:", list(reglas.keys()))
+    #print("COLUMNAS CSV:", df.columns.tolist())
+    #for col in df.columns:
+     #   print(f"  '{col}' -> norm: '{col.strip().lower()}' -> en reglas: {col.strip().lower() in reglas}")      
+            
+    def nivel_fila(row):
+        fuera = 0
+        for col, valor in row.items():
+            col_norm = col.strip().lower()
+            # Busca qué regla corresponde a esta columna
+            regla_match = next((r for key, r in reglas.items() if key in col_norm), None)
+            if regla_match is None:
+                continue
+            try:
+                v = float(valor)
+            except (ValueError, TypeError):
+                continue
+            if v < regla_match.minimo or v > regla_match.maximo:
+                fuera += 1
+        if fuera >= UMBRAL_PELIGRO:  return 'peligro'
+        if fuera >= UMBRAL_URGENTE:  return 'urgente'
+        if fuera >= UMBRAL_CUIDADO:  return 'cuidado'
+        return 'ok'
+    
+    niveles = df.apply(nivel_fila, axis=1).tolist()
     
     context = {
-        'proyecto': proyecto,
-        'columns': df.columns.tolist(),
-        'rows': df.values.tolist(),
+        'proyecto':  proyecto,
+        'columns':   df.columns.tolist(),
+        'rows_con_nivel':  list(zip(df.values.tolist(), niveles)),
+        'niveles':   niveles,
+        'umbral_cuidado': UMBRAL_CUIDADO,
+        'umbral_urgente': UMBRAL_URGENTE,
+        'umbral_peligro': UMBRAL_PELIGRO,
     }
     return render(request, 'excel.html', context)
 
