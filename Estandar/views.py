@@ -59,7 +59,6 @@ def base(request):
 @login_required
 def documento(request):
     if request.method == 'POST':
-            print("API KEY:", settings.GROQ_API_KEY)
             client = Groq(api_key=settings.GROQ_API_KEY) 
             nombre=request.POST.get('nombre')
             estandar_id=int(request.POST.get('estandar'))
@@ -77,7 +76,6 @@ def documento(request):
 
             contenido_csv  = csv_file.read().decode('utf-8')
             csv_file.seek(0)
-            print("Orden de reglas:", [r.nombre for r in reglas])
             prompt = f"""
             Con el siguiente CSV
 
@@ -121,9 +119,18 @@ def crear_estandar(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
         reglas    = request.POST.getlist('reglas')
+        
+        #Los umbrales
+        cuidado = int(request.POST.get('cuidado') or 1)
+        urgente = int(request.POST.get('urgente') or 3)
+        peligro = int(request.POST.get('peligro') or 5)
+        print("UMBRALES Creación:", cuidado, urgente, peligro)
         estandar = Estandar.objects.create(
             nombre=nombre,
-            orden=[int(id) for id in reglas]  
+            orden=[int(id) for id in reglas],
+            UMBRAL_CUIDADO=cuidado,
+            UMBRAL_URGENTE=urgente,
+            UMBRAL_PELIGRO=peligro
         )
         estandar.reglas.set(Regla.objects.filter(id__in=reglas))
         return redirect('administrador')
@@ -228,9 +235,7 @@ def logout_view(request):
 @login_required
 def excel(request, pk):
     proyecto = get_object_or_404(Proyecto, pk=pk)
-    UMBRAL_CUIDADO  = 1
-    UMBRAL_URGENTE  = 3
-    UMBRAL_PELIGRO  = 5
+    
     
     df = pd.read_csv(proyecto.file.path, sep=';')
 
@@ -239,6 +244,10 @@ def excel(request, pk):
     if estandar:
         reglas = {r.nombre_medida.strip().lower(): r for r in estandar.reglas.all()}
       
+    print("UMBRALES:", estandar.UMBRAL_CUIDADO, estandar.UMBRAL_URGENTE, estandar.UMBRAL_PELIGRO)
+    UMBRAL_CUIDADO  = estandar.UMBRAL_CUIDADO 
+    UMBRAL_URGENTE  = estandar.UMBRAL_URGENTE 
+    UMBRAL_PELIGRO  = estandar.UMBRAL_PELIGRO 
     #print("REGLAS KEYS:", list(reglas.keys()))
     #print("COLUMNAS CSV:", df.columns.tolist())
     #for col in df.columns:
@@ -354,7 +363,7 @@ def crear(request):
 def verificar(request):
     ids = request.POST.getlist('reglas') 
     reglas = Regla.objects.filter(id__in=ids)
-    return render(request, 'verificar.html', {'reglas': reglas})
+    return render(request, 'verificar.html', {'reglas': reglas, 'cuidado': request.POST.get('cuidado', 1),'urgente': request.POST.get('urgente', 3),'peligro': request.POST.get('peligro', 5),})
 
 @require_POST
 def tabla_preview(request):

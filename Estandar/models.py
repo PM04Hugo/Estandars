@@ -53,6 +53,9 @@ class Estandar(models.Model):
     nombre = models.CharField(max_length=20)
     reglas = models.ManyToManyField(Regla)
     orden  = models.JSONField(default=list)
+    UMBRAL_CUIDADO  = models.IntegerField(default=1)
+    UMBRAL_URGENTE  = models.IntegerField(default=3)
+    UMBRAL_PELIGRO  = models.IntegerField(default=5)
     
     def __str__(self):
         return self.nombre   

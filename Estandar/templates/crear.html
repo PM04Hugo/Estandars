@@ -25,7 +25,24 @@
         <div class="panel-body" id="selectedList">
             <p class="empty-msg" id="emptyMsg">Ninguna regla seleccionada</p>
         </div>
-        <div class="panel-header" style="border-top: 1px solid var(--color-background); border-bottom: none;">
+        <div class="panel-header" style="border-top: 1px solid var(--color-background); border-bottom: none; flex-direction: column; gap: 12px;">
+            <div style="display:flex; gap:12px; align-items:center; width:100%;">
+                <div style="display:flex; align-items:center; gap:6px; flex:1;">
+                    <span style="font-size:0.82rem; white-space:nowrap;">🟡 ≥</span>
+                    <input type="number" id="cuidado" value="1" min="0"
+                        class="fs-input" style="width:100%; text-align:center;">
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex:1;">
+                    <span style="font-size:0.82rem; white-space:nowrap;">🔴 ≥</span>
+                    <input type="number" id="urgente" value="3" min="0"
+                        class="fs-input" style="width:100%; text-align:center;">
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex:1;">
+                    <span style="font-size:0.82rem; white-space:nowrap;">⚫ ≥</span>
+                    <input type="number" id="peligro" value="5" min="0"
+                        class="fs-input" style="width:100%; text-align:center;">
+                </div>
+            </div>
             <button class="fs-button" id="btnContinuar" disabled onclick="continuar()">
                 Continuar →
             </button>
@@ -39,6 +56,7 @@
                    placeholder="Buscar por nombre, medida o unidad…"
                    style="width: 100%;">
         </div>
+        
         <div class="panel-body" id="reglasList">
             {% for regla in reglas %}
             <div class="regla-card"
@@ -149,6 +167,14 @@
         input.type  = 'hidden';
         input.name  = 'reglas';  // en la view: request.POST.getlist('reglas')
         input.value = id;
+        form.appendChild(input);
+    });
+
+    ['cuidado', 'urgente', 'peligro'].forEach(nivel => {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = nivel;
+        input.value = document.getElementById(nivel).value;
         form.appendChild(input);
     });
 

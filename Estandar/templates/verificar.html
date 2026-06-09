@@ -10,7 +10,12 @@
 <body>
 <div class="layout">
 
-
+    <div id="umbrales" 
+        data-cuidado="{{ cuidado }}" 
+        data-urgente="{{ urgente }}" 
+        data-peligro="{{ peligro }}" 
+        style="display:none">
+    </div>
     <div class="panel">
 
         <div class="panel-body" id="reglasList">
@@ -152,6 +157,15 @@ function continuar() {
     Nombre.name  = 'nombre';
     Nombre.value = nombre;
     form.appendChild(Nombre);
+
+    const umbrales = document.getElementById('umbrales');
+    ['cuidado', 'urgente', 'peligro'].forEach(nivel => {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = nivel;
+        input.value = umbrales.dataset[nivel];
+        form.appendChild(input);
+    });
 
     // Un input por cada ID seleccionado
     ids.forEach(id => {
