@@ -1,3 +1,11 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ Admin }}{% endblock %}
+
+{% block content %}
+
 <style>
   .menu-page {
     min-height: 100vh;
@@ -70,13 +78,13 @@
       <a href="{% url 'unir' %}" class="menu-item">
         Unir <span class="menu-arrow">→</span>
       </a>
-      <a href="{% url 'crear' %}" class="menu-item">
+      <a href="{% url 'estandar_escoger' %}" class="menu-item">
         Estándar <span class="menu-arrow">→</span>
       </a>
-      <a href="{% url 'formulario' %}" class="menu-item">
+      <a href="{% url 'regla_escoger' %}" class="menu-item">
         Regla <span class="menu-arrow">→</span>
       </a>
-      <a href="{% url 'documento' %}" class="menu-item">
+      <a href="{% url 'proyecto_escoger' %}" class="menu-item">
         Crear <span class="menu-arrow">→</span>
       </a>
       <a href="{% url 'abrir' %}" class="menu-item">
@@ -85,3 +93,4 @@
     </div>
   </div>
 </div>
+{% endblock %}

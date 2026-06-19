@@ -3,7 +3,7 @@
 /** Variables **/
 
 :root {
-  --color-background: #cbd5e1;
+  --color-background: #f5f5f5;
   --color-background-alt: #3a9092;
   --color-border-active: #23494c;
   --color-border-default: #94a3b8;
@@ -507,6 +507,14 @@ fieldset {
     padding: 0 4px;
 }
 .sel-remove:hover { color: var(--color-primary-active); }
+
+body {
+    -webkit-font-smoothing: antialiased;
+    font-family: var(--font-family-body);
+    font-optical-sizing: auto;
+    font-style: normal;
+    background-color: var(--color-background);  /* ← añade esta línea */
+}
 
 
 

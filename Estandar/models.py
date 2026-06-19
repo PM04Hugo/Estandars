@@ -45,9 +45,13 @@ class Proyecto(models.Model):
     nombre = models.CharField(max_length=20)
     estandard = models.CharField(max_length=20)
     file= models.FileField(upload_to='proyectos/')
+    columnas_excluidas = models.JSONField(default=list)
+    filas_confirmadas = models.JSONField(default=list)
 
     def __str__(self):
         return self.nombre
+
+
 
 class Estandar(models.Model):
     nombre = models.CharField(max_length=20)

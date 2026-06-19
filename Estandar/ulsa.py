@@ -9,4 +9,7 @@ urlpatterns = [
     path('verificar/', views.verificar, name='verificar'),
     path('tabla_preview/', views.tabla_preview, name='tabla_preview'),
     path('crear_estandar/', views.crear_estandar, name='crear_estandar'),
+    path('estandar_escoger/', views.estandar_escoger, name='estandar_escoger'),
+    path('estandar_listar/', views.estandar_listar, name='estandar_listar'),
+    path('estandar/<int:pk>/borrar/', views.estandar_borrar, name='estandar_borrar'),
     ]

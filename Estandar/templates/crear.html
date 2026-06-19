@@ -1,21 +1,24 @@
+
+{% extends 'base.html' %}
 {% load static %}
-<html lang="es">
-<head>
+
+{% block title %}{{ CEstandar }}{% endblock %}
+
+{% block content %}
+
+
     <meta charset="UTF-8">
     <title>Reglas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
-</head>
-<body>
-<div class="layout">
+
+<div class="layout" style="height: calc(100vh - 56px);">
 
     
     <div class="panel">
         <div class="panel-header">
             {% load user_tags %}
-            <a href="{% if request.user|es_admin %}{% url 'administrador' %}{% else %}{% url 'base' %}{% endif %}">
-                ← Volver
-            </a>
+
             <div class="panel-title">
                 Seleccionadas
                 <span class="count-badge" id="countBadge">0</span>
@@ -93,10 +96,29 @@
         selected[id] ? deselect(id) : select(id, card.dataset);
     }
 
-    function select(id, data) {//Y llama a select el cual mete la regla en nuestra lista de reglas para usar
+    function select(id, data) {
+        const duplicada = Object.values(selected).find(r => r.medida === data.medida);
+        if (duplicada) {
+            showAviso(`Ya has añadido una regla de "${data.medida}" (${duplicada.nombre}). Deselectiónala primero.`);
+            return;
+        }
         selected[id] = data;
         document.getElementById('card-' + id).classList.add('selected');
         renderSelected();
+    }
+
+    function showAviso(msg) {
+        let aviso = document.getElementById('avisoMedida');
+        if (!aviso) {
+            aviso = document.createElement('div');
+            aviso.id = 'avisoMedida';
+            aviso.style.cssText = 'position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:#dc3545; color:#fff; padding:10px 20px; border-radius:8px; font-size:0.85rem; z-index:999; box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+            document.body.appendChild(aviso);
+        }
+        aviso.textContent = msg;
+        aviso.style.display = 'block';
+        clearTimeout(aviso._t);
+        aviso._t = setTimeout(() => aviso.style.display = 'none', 3000);
     }
 
     function deselect(id) { //En caso de volver a darle se va a deselect según si estaba o no en la lista
@@ -187,5 +209,5 @@ function getCookie(name) {
     return match ? decodeURIComponent(match[2]) : '';
 }
 </script>
-</body>
-</html>
+
+{% endblock %}

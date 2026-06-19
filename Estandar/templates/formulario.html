@@ -1,21 +1,18 @@
-
-
 {% extends 'base.html' %}
 {% load static %}
+{% load user_tags %}
 
-{% block title %}{{ Hola }}{% endblock %}
+{% block title %}{{ Formulario }}{% endblock %}
 
 {% block content %}
 
 <div style="
-  min-height: 100vh;
+  min-height: calc(100vh - 56px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background-color: #f5f5f5;
 ">
-  
     <div style="
         background: white;
         border-radius: 12px;
@@ -24,35 +21,24 @@
         width: 100%;
         max-width: 720px;
     ">
-        <div style="display: flex; align-items: center; gap: 2rem; ">
-        {% load user_tags %}
-        {% if request.user|es_admin %}
-            <a  href="{% url 'administrador' %}">
-                <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
-            </a>
-        {% else %}
-            <a  href="{% url 'base' %}">
-                <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
-            </a>
-        {% endif %}
-        <h2 style="margin: 0;">Regla</h2>
+        <div style="margin-bottom: 1.5rem;">
+
+            <h2 style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600; color: var(--color-text-default);">Regla</h2>
         </div>
+
         <form class="fs-form fs-layout__2-column" method="POST">
             {% csrf_token %}
             <div class="fs-field col-span-full">
-            <input class="fs-input" type="text" id="regla" name="regla" placeholder="Como se llama la regla..." required/>
+                <input class="fs-input" type="text" id="regla" name="regla" placeholder="Como se llama la regla..." required/>
             </div>
             <fieldset>
                 <div>
                     <label class="fs-label" for="nombre">Nombre</label>
-                    <input class="fs-input" type="text" id="nombre" name="nombre" oninput="actualizarUnidades()" placeholder="Escribe un nombre..."required/>
+                    <input class="fs-input" type="text" id="nombre" name="nombre" oninput="actualizarUnidades()" placeholder="Escribe un nombre..." required/>
                 </div>
-                <div class>
-                    <label class="fs-label" for="unidades">
-                        Unidades
-                    </label>
-                    <select class="fs-select" id="unidades" name="unidades" onchange="actualizarSliders()"/>
-                    </select>
+                <div>
+                    <label class="fs-label" for="unidades">Unidades</label>
+                    <select class="fs-select" id="unidades" name="unidades" onchange="actualizarSliders()"></select>
                 </div>
             </fieldset>
             <fieldset>
@@ -62,8 +48,6 @@
                         <input type="range" class="fs-slider" id="minimo"
                          oninput="document.getElementById('val-minimo').textContent = this.value;
                         document.getElementById('minimo-hidden').value = this.value;">
-
-                        
                     </div>
                 </div>
                 <div class="slidecontainer">
@@ -76,14 +60,14 @@
                 </div>
             </fieldset>
             <div>
-                <span  id="val-minimo">50</span>
+                <span id="val-minimo">50</span>
             </div>
             <div>
                 <span id="val-maximo">50</span>
             </div>
             <div class="fs-field col-span-full">
                 <label class="fs-label" for="descripcion">Descripción</label>
-                <textarea class="fs-textarea" id="descripcion" name="descripcion" placeholder="Describe la regla..."rows="4"></textarea>  
+                <textarea class="fs-textarea" id="descripcion" name="descripcion" placeholder="Describe la regla..." rows="4"></textarea>  
             </div>
             <input type="hidden" id="minimo-hidden" name="minimo" value="0">
             <input type="hidden" id="maximo-hidden" name="maximo" value="0">
@@ -93,11 +77,8 @@
         </form>
     </div>
 </div>
-  
-
 
 <script>
-
 const datos = {
     {% for medida in medidas %}
     "{{ medida.nombre }}": {
@@ -115,18 +96,11 @@ const datos = {
     {% endfor %}
 };
 
-
-
 function actualizarUnidades() {
     const nombre = document.getElementById("nombre").value.trim();
     const selectUnidades = document.getElementById("unidades");
-
     selectUnidades.innerHTML = "";
-
-    const clave = Object.keys(datos).find(
-        k => k.toLowerCase() === nombre.toLowerCase()
-    );
-
+    const clave = Object.keys(datos).find(k => k.toLowerCase() === nombre.toLowerCase());
     if (clave) {
         datos[clave].unidades.forEach(u => {
             const option = document.createElement("option");
@@ -141,33 +115,25 @@ function actualizarUnidades() {
     }
 }
 
-
 function actualizarSliders() {
     const nombre = document.getElementById("nombre").value.trim();
     const unidad = document.getElementById("unidades").value;
-
-    const clave = Object.keys(datos).find(
-        k => k.toLowerCase() === nombre.toLowerCase()
-    );
+    const clave = Object.keys(datos).find(k => k.toLowerCase() === nombre.toLowerCase());
     if (!clave) return;
-
     const u = datos[clave].unidades.find(u => u.nombre === unidad);
     if (!u) return;
-
     ["minimo", "maximo"].forEach(id => {
         const slider = document.getElementById(id);
         slider.min  = u.min;
         slider.max  = u.max;
         slider.step = u.step;
         setTimeout(() => {
-            slider.value = (u.min + u.max) / 2;
+            slider.value = id === "minimo" ? u.min : u.max;
             document.getElementById("val-" + id).textContent = slider.value;
             document.getElementById(id + "-hidden").value = slider.value;
         }, 0);
     });
 }
-
-
 </script>
 
 {% endblock %}

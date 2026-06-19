@@ -4,21 +4,8 @@
 {% block content %}
 <div class="container-fluid py-4">
 
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div>
-      <h4 class="mb-1 fw-semibold">{{ proyecto.nombre }}</h4>
-      <small class="text-muted">
-        <i class="bi bi-patch-check me-1"></i>Estándar: {{ proyecto.estandard }}
-      </small>
-    </div>
-  </div>
-
-  <div class="d-flex gap-3 mb-3 small">
-    <span class="badge bg-success px-3 py-2">OK</span>
-    <span class="badge bg-warning text-dark px-3 py-2">Cuidado</span>
-    <span class="badge bg-danger px-3 py-2">Urgente</span>
-    <span class="badge px-3 py-2" style="background:#222;color:#fff">Peligro</span>
-  </div>
+  {{ columns|json_script:"columnas-data" }}
+  {{ rows_con_nivel|json_script:"filas-data" }}
 
   <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
@@ -28,7 +15,7 @@
             <tr>
               {% for col in columns %}
                 {% if forloop.first %}
-                  <th class="col-destacada">
+                  <th class="col-destacada" >
                     <i class="bi bi-person-fill me-1"></i>{{ col }}
                   </th>
                 {% else %}
@@ -38,23 +25,27 @@
             </tr>
           </thead>
           <tbody>
-            {% for row, nivel in rows_con_nivel %}
-            <tr data-nivel="{{ nivel }}">
-              {% for cell in row %}
+            {% for celdas, nivel in rows_con_nivel %}
+            <tr data-nivel="{{ nivel }}" data-index="{{ forloop.counter0 }}">
+            {% for celda in celdas %}
                 {% if forloop.first %}
-                  <td class="col-destacada fw-semibold texto-{{ nivel }}">
+                <td class="col-destacada fw-semibold texto-{{ nivel }}"
+                    onclick="abrirPaciente({{ forloop.parentloop.counter0 }})"
+                    style="cursor:pointer;">
                     <div class="d-flex align-items-center gap-2">
-                      <span class="dot-nivel dot-{{ nivel }}"></span>
-                      {{ cell }}
+                    <span class="dot-nivel dot-{{ nivel }}"></span>
+                    {{ celda.valor }}
                     </div>
-                  </td>
+                </td>
                 {% else %}
-                  <td class="text-center">{{ cell }}</td>
+                <td class="text-center {% if celda.error %}celda-error-{{ nivel }}{% endif %}">
+                    {{ celda.valor }}
+                </td>
                 {% endif %}
-              {% endfor %}
+            {% endfor %}
             </tr>
             {% endfor %}
-          </tbody>
+            </tbody>
         </table>
       </div>
     </div>
@@ -62,11 +53,11 @@
 </div>
 
 <style>
+  /* ... tus estilos existentes sin cambios ... */
   .col-destacada {
     background-color: hsl(212, 84%, 52%) !important;
     color: hsla(0, 0%, 100%, 0.94) !important;
   }
-
   .dot-nivel {
     display: inline-flex;
     align-items: center;
@@ -76,19 +67,19 @@
     border-radius: 50%;
     flex-shrink: 0;
   }
-
   .dot-ok      { background: #198754; }
   .dot-cuidado { background: #ffc107; }
   .dot-urgente { background: #dc3545; }
   .dot-peligro { background: #222;    }
-
   .texto-ok      { color: hsla(0, 0%, 100%, 0.94) !important; }
   .texto-cuidado { color: #ffc107 !important; }
   .texto-urgente { color: hsla(354, 100%, 40%, 0.81) !important; }
   .texto-peligro { color: #aaaaaa !important; }
-
   .table-hover tbody tr:hover td { background-color: hsl(212, 20%, 88%) !important; }
   .table-hover tbody tr:hover td.col-destacada { background-color: hsl(212, 84%, 45%) !important; }
+  .celda-error-cuidado { background-color: hsl(48, 100%, 85%) !important; color: #856404 !important; font-weight: 600; }
+  .celda-error-urgente { background-color: hsl(0, 100%, 90%) !important; color: #842029 !important; font-weight: 600; }
+  .celda-error-peligro { background-color: hsl(0, 0%, 80%) !important; color: #222 !important; font-weight: 600; }
 </style>
 
 <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.css">
@@ -96,11 +87,85 @@
 <script src="https://cdn.datatables.net/2.3.7/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/2.3.7/js/dataTables.bootstrap5.js"></script>
 <script>
-  $(document).ready(function () {
+    const CONFIRMAR_URL = "{% url 'confirmar_fila' proyecto.pk %}";
+
+    let pacienteActualIndex = null;
+    let filasState = JSON.parse(document.getElementById('filas-data').textContent);
+
+    $(document).ready(function () {
     $('#data-table').DataTable({
-      pageLength: 25,
-      language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
+        pageLength: 25,
+        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
     });
-  });
+    });
+
+  function accionPanel() {
+    if (pacienteActualIndex == null) return;
+
+    fetch(CONFIRMAR_URL, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ index: pacienteActualIndex }),
+    });
+
+    const [celdas] = filasState[pacienteActualIndex];
+    celdas.forEach((celda, i) => {
+         if (i === 0)
+          return; 
+          celda.error = false; 
+    });
+    filasState[pacienteActualIndex] = [celdas, 'ok'];
+
+    const fila = document.querySelector(`tr[data-index="${pacienteActualIndex}"]`);
+
+    fila.querySelector('td.col-destacada').classList.remove('texto-cuidado', 'texto-urgente', 'texto-peligro');
+    fila.querySelector('td.col-destacada').classList.add('texto-ok');
+
+    fila.querySelector('.dot-nivel').classList.remove('dot-cuidado', 'dot-urgente', 'dot-peligro');
+    fila.querySelector('.dot-nivel').classList.add('dot-ok');
+    fila.querySelectorAll('td').forEach((td, i) => {
+        if (i === 0) return;
+        td.classList.remove('celda-error-cuidado', 'celda-error-urgente', 'celda-error-peligro');
+    });
+
+    document.getElementById('panelErroresBody').innerHTML =
+        '<p class="text-success mb-0">✅ Todos los valores están dentro del rango normal.</p>';
+    }
+
+  function abrirPaciente(index) {
+    pacienteActualIndex = index;
+    const columnas = JSON.parse(document.getElementById('columnas-data').textContent);
+
+    const [celdas, nivel] = filasState[index];
+
+    const nombre = celdas[0].valor;
+    document.getElementById('panelErroresTitulo').textContent = nombre;
+
+    const body = document.getElementById('panelErroresBody');
+    const errores = [];
+
+    celdas.forEach((celda, i) => {
+        if (i === 0) return;
+        if (celda.error) {
+        errores.push(`⚠️ Error en <strong>${columnas[i]}</strong>: ${celda.valor}`);
+        }
+    });
+
+    if (errores.length === 0) {
+        body.innerHTML = '<p class="text-success mb-0">✅ Todos los valores están dentro del rango normal.</p>';
+    } else {
+        body.innerHTML = '<ul class="list-group">' +
+        errores.map(e => `<li class="list-group-item">${e}</li>`).join('') +
+        '</ul>';
+    }
+
+    const offcanvas = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('panelErrores'));
+    offcanvas.show();
+  }
+
+  
 </script>
 {% endblock %}

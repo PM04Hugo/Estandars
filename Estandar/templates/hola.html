@@ -1,4 +1,10 @@
+
+{% extends 'base.html' %}
 {% load static %}
+
+{% block title %}{{ Documento }}{% endblock %}
+
+{% block content %}
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -24,16 +30,7 @@
         width: 100%;
         max-width: 720px;
     ">
-        {% load user_tags %}
-        {% if request.user|es_admin %}
-            <a  href="{% url 'administrador' %}">
-                <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
-            </a>
-        {% else %}
-            <a  href="{% url 'base' %}">
-                <input type="image" src="/static/img/arrow.png" alt="Submit" width="32" height="32">
-            </a>
-        {% endif %}
+
         
         <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: row; align-items: flex-start; gap: 3rem;">
             {% csrf_token %}
@@ -41,17 +38,14 @@
             <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
                 <input type="file" id="fileInput" name="fileInput" style="display: none" accept=".csv" required/>
                 
-                <!-- ── Imagen (se oculta cuando hay preview) ── -->
                 <label for="fileInput" id="fileLabel" style="cursor: pointer; text-align: center;">
                     <img id="imgI" src="/static/img/plus.png" width="300" height="300" style="object-fit: contain;"/>
                     <br>
                     <span class="fs-label" id="subirI" style="display: block; margin-top: 10px;">Subir CSV</span>
                 </label>
 
-                <!-- ── Preview (aparece aquí cuando hay datos) ── -->
                 <div id="previewContainer" style="display:none; width:100%; overflow-x:auto;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                        <!-- Al pulsar vuelve a mostrar el label para cambiar el archivo -->
                         <label for="fileInput" id="previewNombre" style="cursor:pointer; font-size:0.85rem; color:#666; margin:0;"></label>
                         <div id="previewSpinner" class="spinner-border spinner-border-sm text-primary" role="status" style="display:none;"></div>
                     </div>
@@ -175,3 +169,4 @@ function estandares(){
 </script>
 </body>
 </html>
+{% endblock %}

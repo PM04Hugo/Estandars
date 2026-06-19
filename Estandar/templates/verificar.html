@@ -1,4 +1,10 @@
+
+{% extends 'base.html' %}
 {% load static %}
+
+{% block title %}{{ Verificar }}{% endblock %}
+
+{% block content %}
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -17,7 +23,9 @@
         style="display:none">
     </div>
     <div class="panel">
-
+        <a href="{% url 'crear' %}" style="color: var(--color-text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+                ← Volver
+        </a>
         <div class="panel-body" id="reglasList">
             {% for regla in reglas %}
             <div class="regla-card-drag"
@@ -189,3 +197,5 @@ fetchTabla();
 </script>
 </body>
 </html>
+
+{%endblock%}
