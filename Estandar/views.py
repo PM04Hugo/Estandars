@@ -652,8 +652,10 @@ def proyecto_borrar(request, pk):
 
     proyecto = get_object_or_404(Proyecto, pk=pk)
     if request.method == 'POST':
+        if proyecto.file:
+            proyecto.file.delete(save=False)
         proyecto.delete()
-        messages.success(request, f'Proyecto "{proyecto.nombre}" eliminada.')
+        messages.success(request, f'Proyecto "{proyecto.nombre}" eliminado.')
     return redirect('proyecto_listar')
 
 def home(request):
