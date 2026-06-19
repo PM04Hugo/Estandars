@@ -15,6 +15,7 @@ import csv, io
 from django.conf import settings
 import unicodedata
 import json
+import re
 
 
 @login_required
@@ -29,8 +30,8 @@ def formulario(request):
             maximo=float(request.POST.get('maximo')),
         )
         if request.user.groups.filter(name='admins').exists():
-            return redirect('administrador')
-        return redirect('base')
+            return redirect('home')
+        return redirect('home')
 
     medidas = Medidas.objects.all()
     relaciones = MedidasUnidades.objects.select_related('medida', 'unidad').all()
@@ -77,6 +78,8 @@ def documento(request):
         ])
 
         contenido_csv = csv_file.read().decode('utf-8')
+        
+        
         csv_file.seek(0)
         df = pd.read_csv(io.StringIO(contenido_csv), sep=';')
         primera_col = df.iloc[:, 0]
@@ -90,20 +93,27 @@ def documento(request):
         Y el estándar espera estas unidades:
         {reglas_info}
 
-        Detecta qué columnas necesitan conversión de unidades.
-        Devuelve ÚNICAMENTE este JSON sin markdown:
+        Tu tarea es detectar ÚNICAMENTE columnas que necesiten conversión matemática de unidades (por ejemplo: °C a °F, kg a lb, cm a m).
+        NO incluyas columnas que solo tengan diferente nombre pero las mismas unidades.
+        NO incluyas columnas si no estás seguro de que las unidades sean distintas.
+
+        Devuelve ÚNICAMENTE este JSON sin markdown ni explicaciones:
         [
         {{"columna": "Temperatura", "de": "°C", "a": "°F"}}
         ]
-        Si no hay conversiones necesarias devuelve [].
+        Si no hay conversiones matemáticas necesarias devuelve exactamente: []
         """
-        import json
         respuesta = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt_detectar}]
         )
         contenido = respuesta.choices[0].message.content.strip()
-        contenido = contenido.split('```json')[-1].split('```')[0].strip() if '```' in contenido else contenido
+        if '```' in contenido:
+            contenido = contenido.split('```json')[-1].split('```')[0].strip()
+        if not contenido:
+            contenido = contenido.split('```')[-1].split('```')[0].strip()
+        match = re.search(r'\[.*?\]', contenido, re.DOTALL)
+        contenido = match.group(0) if match else '[]'
         transformaciones = json.loads(contenido)
 
         if transformaciones:
@@ -289,7 +299,7 @@ def crear_estandar(request):
             UMBRAL_PELIGRO=peligro
         )
         estandar.reglas.set(Regla.objects.filter(id__in=reglas))
-        return redirect('administrador')
+        return redirect('home')
 
     return redirect('departamento')
 
@@ -344,7 +354,7 @@ def unir(request):
                 step=step
                 
             )
-            return redirect('administrador') 
+            return redirect('home') 
         medidas = Medidas.objects.all()
         relaciones = MedidasUnidades.objects.select_related('medida', 'unidad').all()
         unidades = Unidades.objects.all()

@@ -13,7 +13,7 @@
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <a href="{% if request.user|es_admin %}{% url 'administrador' %}{% else %}{% url 'base' %}{% endif %}">
+        <a href="{% if request.user|es_admin %}{% url 'home' %}{% else %}{% url 'home' %}{% endif %}">
                 ← Volver
             </a>
       <h4 class="mb-1 fw-semibold">{{ proyecto.nombre }}</h4>
