@@ -77,6 +77,7 @@
                 <div class="regla-card" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <div class="regla-nombre">{{ estandar.nombre }}</div>
+                        <span class="regla-badge">{{ estandar.departamento }}</span>
                         <div class="regla-desc">{{ estandar.reglas.count }} regla{{ estandar.reglas.count|pluralize }}</div>
                     </div>
                     <form method="POST" action="{% url 'estandar_borrar' estandar.pk %}"

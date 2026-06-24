@@ -88,6 +88,7 @@
 <script src="https://cdn.datatables.net/2.3.7/js/dataTables.bootstrap5.js"></script>
 <script>
     const CONFIRMAR_URL = "{% url 'confirmar_fila' proyecto.pk %}";
+    const COMENTARIO_URL = "{% url 'comentario_error_ajax' proyecto.pk %}";
 
     let pacienteActualIndex = null;
     let filasState = JSON.parse(document.getElementById('filas-data').textContent);
@@ -140,30 +141,65 @@
     const columnas = JSON.parse(document.getElementById('columnas-data').textContent);
 
     const [celdas, nivel] = filasState[index];
-
     const nombre = celdas[0].valor;
     document.getElementById('panelErroresTitulo').textContent = nombre;
 
     const body = document.getElementById('panelErroresBody');
-    const errores = [];
 
-    celdas.forEach((celda, i) => {
-        if (i === 0) return;
-        if (celda.error) {
-        errores.push(`⚠️ Error en <strong>${columnas[i]}</strong>: ${celda.valor}`);
-        }
-    });
+    const errores = celdas
+      .map((celda, i) => ({ celda, i }))
+      .filter(({ celda, i }) => i !== 0 && celda.error);
 
     if (errores.length === 0) {
-        body.innerHTML = '<p class="text-success mb-0">✅ Todos los valores están dentro del rango normal.</p>';
+      body.innerHTML = '<p class="text-success mb-0">✅ Todos los valores están dentro del rango normal.</p>';
     } else {
-        body.innerHTML = '<ul class="list-group">' +
-        errores.map(e => `<li class="list-group-item">${e}</li>`).join('') +
+      body.innerHTML = '<ul class="list-group" id="lista-errores">' +
+        errores.map(({ celda, i }) => `
+          <li class="list-group-item" data-medida="${columnas[i]}">
+            <div>⚠️ Error en <strong>${columnas[i]}</strong>: ${celda.valor}</div>
+            <div class="comentario-ia mt-1 small text-muted">
+              <span class="spinner-border spinner-border-sm me-1"></span>Generando comentario...
+            </div>
+          </li>
+        `).join('') +
         '</ul>';
+
+      pedirComentariosIA(errores.map(({ celda, i }) => ({
+        medida: columnas[i],
+        valor: celda.valor,
+      })));
     }
 
     const offcanvas = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('panelErrores'));
     offcanvas.show();
+  }
+
+ function pedirComentariosIA(errores) {
+    fetch(COMENTARIO_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+      body: JSON.stringify({ errores }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        const comentarios = data.comentarios || {};
+
+        document.querySelectorAll('#lista-errores li').forEach((li, idx) => {
+          const contenedor = li.querySelector('.comentario-ia');
+          const texto = comentarios[String(idx)];
+          contenedor.innerHTML = texto
+            ? `💬 ${texto}`
+            : '<span class="text-danger">Sin comentario disponible.</span>';
+        });
+      })
+      .catch(() => {
+        document.querySelectorAll('#lista-errores .comentario-ia').forEach(el => {
+          el.innerHTML = '<span class="text-danger">Error al contactar con el modelo.</span>';
+        });
+      });
   }
 
   

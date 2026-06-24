@@ -61,6 +61,7 @@
                         <div class="regla-badges">
                             <span class="regla-badge">Mín {{ regla.minimo }}</span>
                             <span class="regla-badge">Máx {{ regla.maximo }}</span>
+                            <span class="regla-badge">{{ regla.departamento }}</span>
                         </div>
                     </div>
                     <form method="POST" action="{% url 'regla_borrar' regla.pk %}"

@@ -15,8 +15,30 @@ import csv, io
 from django.conf import settings
 import unicodedata
 import json
+from django.http import JsonResponse, HttpResponseNotAllowed
+from .rag import generar_comentarios_batch
 import re
 
+
+
+def comentario_error_ajax(request, proyecto_pk):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    data = json.loads(request.body)
+    errores = data.get('errores', [])
+
+    if not errores:
+        return JsonResponse({'comentarios': {}})
+
+    try:
+        comentarios = generar_comentarios_batch(errores)
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return JsonResponse({'error': str(e), 'detalle': traceback.format_exc()}, status=500)
+
+    return JsonResponse({'comentarios': comentarios})
 
 @login_required
 def formulario(request):
@@ -28,6 +50,7 @@ def formulario(request):
             descripcion=request.POST.get('descripcion'),
             minimo=float(request.POST.get('minimo')),
             maximo=float(request.POST.get('maximo')),
+            departamento=request.POST.get('departamento', 'General')
         )
         if request.user.groups.filter(name='admins').exists():
             return redirect('home')
@@ -36,13 +59,17 @@ def formulario(request):
     medidas = Medidas.objects.all()
     relaciones = MedidasUnidades.objects.select_related('medida', 'unidad').all()
     es_admin = request.user.groups.filter(name='admins').count() > 0
-    print("Usuario actual:", request.user.username)
-    print("Grupos reales en esta BD:", list(request.user.groups.values_list('name', flat=True)))
+
+    if es_admin:
+        grupos = Group.objects.exclude(name='admins')  
+    else:
+        grupos = request.user.groups.exclude(name='admins')
 
     return render(request, 'formulario.html', {
         'medidas': medidas,
         'relaciones': relaciones,
         'admin': es_admin,
+        'grupos': grupos,  
     })
 
 def form(request): #Formulario solo podría x usuario no se como hacerlo aún
@@ -63,6 +90,8 @@ def base(request):
 @login_required
 def documento(request):
     if request.method == 'POST':
+        for key in ['csv_pendiente', 'primera_col', 'transformaciones', 'nombre', 'estandar_id']:
+            request.session.pop(key, None)
         client = Groq(api_key=settings.GROQ_API_KEY)
         nombre = request.POST.get('nombre')
         estandar_id = int(request.POST.get('estandar'))
@@ -93,15 +122,12 @@ def documento(request):
         Y el estándar espera estas unidades:
         {reglas_info}
 
-        Tu tarea es detectar ÚNICAMENTE columnas que necesiten conversión matemática de unidades (por ejemplo: °C a °F, kg a lb, cm a m).
-        NO incluyas columnas que solo tengan diferente nombre pero las mismas unidades.
-        NO incluyas columnas si no estás seguro de que las unidades sean distintas.
-
-        Devuelve ÚNICAMENTE este JSON sin markdown ni explicaciones:
+        Detecta qué columnas necesitan conversión de unidades. No devuelvas conversiones cuyas unidades de partida y finales son iguales
+        Devuelve ÚNICAMENTE este JSON sin markdown:
         [
         {{"columna": "Temperatura", "de": "°C", "a": "°F"}}
         ]
-        Si no hay conversiones matemáticas necesarias devuelve exactamente: []
+        Si no hay conversiones necesarias devuelve [].
         """
         respuesta = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -110,11 +136,13 @@ def documento(request):
         contenido = respuesta.choices[0].message.content.strip()
         if '```' in contenido:
             contenido = contenido.split('```json')[-1].split('```')[0].strip()
-        if not contenido:
-            contenido = contenido.split('```')[-1].split('```')[0].strip()
-        match = re.search(r'\[.*?\]', contenido, re.DOTALL)
-        contenido = match.group(0) if match else '[]'
+
+        matches = re.findall(r'\[.*?\]', contenido, re.DOTALL)
+        contenido = matches[-1] if matches else '[]'
+
         transformaciones = json.loads(contenido)
+        transformaciones = [t for t in transformaciones if t['de'].strip() != t['a'].strip()]
+        
 
         if transformaciones:
             
@@ -148,11 +176,15 @@ def documento(request):
             df_final = pd.concat([primera_col.reset_index(drop=True), df_transformado.reset_index(drop=True)], axis=1)
             csv_final = df_final.to_csv(index=False, sep=';')
 
-            proyecto = Proyecto.objects.create(nombre=nombre, estandard=estandar.nombre)
+            proyecto = Proyecto.objects.create(nombre=nombre, estandard=estandar.nombre,usuario=request.user)
             proyecto.file.save(f"{nombre}.csv", ContentFile(csv_final.encode('utf-8')))
             return redirect('excel', pk=proyecto.pk)
 
-    estandares = Estandar.objects.all()
+    if request.user.groups.filter(name='admins').exists():
+        estandares = Estandar.objects.all()
+    else:
+        grupo = request.user.groups.exclude(name='admins').first()
+        estandares = Estandar.objects.filter(departamento=grupo.name) if grupo else Estandar.objects.none()
     return render(request, 'hola.html', {'estandares': estandares})
 
 
@@ -232,6 +264,7 @@ def confirmar_transformaciones(request):
                 nombre=nombre,
                 estandard=estandar.nombre,
                 columnas_excluidas=columnas_excluidas_reales,  
+                usuario=request.user,
             )
             proyecto.file.save(
                 f"{nombre}.csv", 
@@ -270,6 +303,7 @@ def confirmar_transformaciones(request):
                 nombre=nombre,
                 estandard=estandar.nombre,
                 columnas_excluidas=columnas_excluidas,
+                usuario=request.user,
             )
             proyecto.file.save(f"{nombre}.csv", ContentFile(csv_final.encode('utf-8')))
 
@@ -291,12 +325,14 @@ def crear_estandar(request):
         cuidado = int(request.POST.get('cuidado') or 1)
         urgente = int(request.POST.get('urgente') or 3)
         peligro = int(request.POST.get('peligro') or 5)
+        departamento = request.POST.get('filtroDepartamento', 'General')
         estandar = Estandar.objects.create(
             nombre=nombre,
             orden=[int(id) for id in reglas],
             UMBRAL_CUIDADO=cuidado,
             UMBRAL_URGENTE=urgente,
-            UMBRAL_PELIGRO=peligro
+            UMBRAL_PELIGRO=peligro,
+            departamento=departamento
         )
         estandar.reglas.set(Regla.objects.filter(id__in=reglas))
         return redirect('home')
@@ -367,7 +403,7 @@ def unir(request):
 
     else:
         messages.error(request, 'Acceso denegado: No eres un administrador')
-        return redirect('login/1')
+        return redirect('/login/1')
 
 
 def login_view(request, departamento):
@@ -424,7 +460,6 @@ def excel(request, pk):
         return any(normalizar(excl) in col_norm or col_norm in normalizar(excl)
                 for excl in columnas_excluidas)
         
-    print("REGLAS DICT:", list(reglas.keys()))
 
     def nivel_fila(row):
         fuera = 0
@@ -562,23 +597,23 @@ def preview(request):
 
 @login_required
 def crear(request):
-    
+    from django.contrib.auth.models import Group
     return render(request, 'crear.html', {
-        'reglas': Regla.objects.all()
+        'reglas': Regla.objects.all(),
+        'grupos': Group.objects.exclude(name='admins'),
     })
 
 @login_required   
 def verificar(request):
     ids = request.POST.getlist('reglas') 
     reglas = Regla.objects.filter(id__in=ids)
-    return render(request, 'verificar.html', {'reglas': reglas, 'cuidado': request.POST.get('cuidado', 1),'urgente': request.POST.get('urgente', 3),'peligro': request.POST.get('peligro', 5),})
+    return render(request, 'verificar.html', {'reglas': reglas, 'cuidado': request.POST.get('cuidado', 1),'urgente': request.POST.get('urgente', 3),'peligro': request.POST.get('peligro', 5),'departamento': request.POST.get('filtroDepartamento', 'General'),})
 
 @require_POST
 def tabla_preview(request):
     ids = request.POST.getlist('reglas')
     reglas = Regla.objects.filter(id__in=ids)
     reglas_ordenadas = sorted(reglas, key=lambda r: ids.index(str(r.id)))
-
     columns = [r.nombre for r in reglas_ordenadas]
     df = pd.DataFrame(columns=columns, index=range(5))  # ← DataFrame vacío con 5 filas
     df = df.fillna('')
@@ -588,9 +623,13 @@ def tabla_preview(request):
         'rows':    df.values.tolist(),
     })
 
+
 @login_required
 def abrir(request):
-    proyectos = Proyecto.objects.all()
+    if request.user.groups.filter(name='admins').exists():
+        proyectos = Proyecto.objects.all()
+    else:
+        proyectos = Proyecto.objects.filter(usuario=request.user)
     return render(request, 'abrir.html', {'proyectos': proyectos})
 
 @login_required
@@ -618,7 +657,11 @@ def estandar_listar(request):
 
 @login_required
 def regla_listar(request):
-    reglas = Regla.objects.all()
+    if request.user.groups.filter(name='admins').exists():
+        reglas = Regla.objects.all()
+    else:
+        grupo = request.user.groups.exclude(name='admins').first()
+        reglas = Regla.objects.filter(departamento=grupo.name) if grupo else Regla.objects.none()
     return render(request, 'regla_listar.html', {'reglas': reglas})
 
 @login_required
@@ -668,6 +711,7 @@ def proyecto_borrar(request, pk):
         messages.success(request, f'Proyecto "{proyecto.nombre}" eliminado.')
     return redirect('proyecto_listar')
 
+@login_required
 def home(request):
     context = {
         'total_estandares': Estandar.objects.count(),

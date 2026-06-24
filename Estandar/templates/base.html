@@ -12,6 +12,7 @@
     <style>
         html, body {
             height: 100%;
+            overflow-x: hidden;
         }
 
         main {
@@ -58,7 +59,6 @@
             color: var(--color-primary) !important;
         }
 
-        /* Dropdowns del menú, usando el mismo lenguaje visual */
         .nav-item.dropdown .nav-item-link.dropdown-toggle::after {
             margin-left: 0.4rem;
             vertical-align: 0.2em;
@@ -191,14 +191,21 @@
                             <li><a class="dropdown-item" href="{% url 'formulario' %}">Crear</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-item-link" href="{% url 'documento' %}">📄 Documentos</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-item-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            📄 Documentos
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'documento' %}">Crear</a></li>
+                            <li><a class="dropdown-item" href="{% url 'abrir' %}">Abrir</a></li>
+                        </ul>
+                        
                     </li>
                 {% endif %}
 
                 {% if user|es_admin %}
                     <li class="nav-item">
-                        <a class="nav-item-link" href="{% url 'unir' %}">🔗 Unir</a>
+                        <a class="nav-item-link" href="{% url 'unir' %}">🔗 Relación</a>
                     </li>
 
                     <li class="nav-item dropdown">

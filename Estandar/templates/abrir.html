@@ -10,7 +10,7 @@
   <div class="panel">
     <div class="panel-header">
         {% load user_tags %}
-        <a href="{% if request.user|es_admin %}{% url 'administrador' %}{% else %}{% url 'base' %}{% endif %}" style="color: var(--color-text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+        <a href="{% if request.user|es_admin %}{% url 'home' %}{% else %}{% url 'home' %}{% endif %}" style="color: var(--color-text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 500;">
             ← Volver
         </a>
         <div class="panel-title">

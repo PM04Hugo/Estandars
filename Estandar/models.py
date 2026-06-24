@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -37,6 +38,7 @@ class Regla(models.Model):
     descripcion = models.TextField()
     minimo = models.FloatField()
     maximo = models.FloatField()
+    departamento=models.CharField(max_length=20, default='General')
     
     def __str__(self):
         return self.nombre
@@ -47,6 +49,7 @@ class Proyecto(models.Model):
     file= models.FileField(upload_to='proyectos/')
     columnas_excluidas = models.JSONField(default=list)
     filas_confirmadas = models.JSONField(default=list)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.nombre
@@ -60,6 +63,7 @@ class Estandar(models.Model):
     UMBRAL_CUIDADO  = models.IntegerField(default=1)
     UMBRAL_URGENTE  = models.IntegerField(default=3)
     UMBRAL_PELIGRO  = models.IntegerField(default=5)
+    departamento=models.CharField(max_length=20, default='General')
     
     def __str__(self):
         return self.nombre   

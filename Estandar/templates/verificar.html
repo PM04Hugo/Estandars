@@ -20,6 +20,7 @@
         data-cuidado="{{ cuidado }}" 
         data-urgente="{{ urgente }}" 
         data-peligro="{{ peligro }}" 
+        data-departamento="{{ departamento }}"
         style="display:none">
     </div>
     <div class="panel">
@@ -183,6 +184,12 @@ function continuar() {
         input.value = id;
         form.appendChild(input);
     });
+
+    const depInput = document.createElement('input');
+    depInput.type  = 'hidden';
+    depInput.name  = 'filtroDepartamento';
+    depInput.value = umbrales.dataset.departamento;
+    form.appendChild(depInput);
 
     document.body.appendChild(form);
     form.submit();

@@ -19,4 +19,5 @@ urlpatterns = [
     path('proyecto_escoger', views.proyecto_escoger, name='proyecto_escoger'),
     path('proyecto_listar/', views.proyecto_listar, name='proyecto_listar'),
     path('proyecto_borrar/<int:pk>/', views.proyecto_borrar, name='proyecto_borrar'),
+    path('proyecto/<int:proyecto_pk>/comentario-ia/', views.comentario_error_ajax, name='comentario_error_ajax'),
     ]

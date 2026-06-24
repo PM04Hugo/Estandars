@@ -55,6 +55,12 @@
     <div class="panel">
         <div class="panel-header">
             <div class="panel-title">Reglas disponibles</div>
+            <select class="fs-select" id="filtroDepartamento" onchange="filtrarPorDepartamento()" style="width:100%; margin-bottom: 0.5rem;">
+                <option value="">Selecciona un departamento...</option>
+                {% for grupo in grupos %}
+                <option value="{{ grupo.name }}">{{ grupo.name }}</option>
+                {% endfor %}
+            </select>
             <input class="fs-input" type="text" id="searchInput"
                    placeholder="Buscar por nombre, medida o unidad…"
                    style="width: 100%;">
@@ -70,6 +76,7 @@
                  data-unidad="{{ regla.nombre_unidad }}"
                  data-minimo="{{ regla.minimo }}"
                  data-maximo="{{ regla.maximo }}"
+                 data-departamento="{{ regla.departamento }}"
                  onclick="toggleRegla(this)">
                 <div class="regla-nombre">{{ regla.nombre }}</div>
                 <div class="regla-desc">{{ regla.descripcion }}</div>
@@ -87,7 +94,7 @@
 
 </div>
 <script>
-
+    document.querySelectorAll('.regla-card').forEach(card => card.classList.add('hidden'));
     //Vamos a dividirlo para entenderlo
     const selected = {}; //Array vacio, este tendrá las reglas seleccionads por el usuario
 
@@ -183,6 +190,8 @@
     csrf.value = getCookie('csrftoken');
     form.appendChild(csrf);
 
+    
+
     // Un input por cada ID seleccionado
     ids.forEach(id => {
         const input = document.createElement('input');
@@ -200,6 +209,12 @@
         form.appendChild(input);
     });
 
+    const depInput = document.createElement('input');
+    depInput.type  = 'hidden';
+    depInput.name  = 'filtroDepartamento';
+    depInput.value = document.getElementById('filtroDepartamento').value;
+    form.appendChild(depInput);
+
     document.body.appendChild(form);
     form.submit();
 }
@@ -207,6 +222,18 @@
 function getCookie(name) {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? decodeURIComponent(match[2]) : '';
+}
+
+function filtrarPorDepartamento() {
+    const dep = document.getElementById('filtroDepartamento').value.toLowerCase();
+    document.querySelectorAll('.regla-card').forEach(card => {
+        if (!dep) {
+            card.classList.add('hidden'); // oculta todas hasta que se escoja uno
+        } else {
+            const cardDep = (card.dataset.departamento || '').toLowerCase();
+            card.classList.toggle('hidden', cardDep !== dep);
+        }
+    });
 }
 </script>
 

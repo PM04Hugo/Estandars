@@ -1,0 +1,45 @@
+La presión arterial normal es de hasta 120/80 mmHg (sistólica/diastólica). Por encima se considera prehipertensión o hipertensión.
+La presión sistólica mide la tensión de las arterias cuando el corazón se contrae para expulsar sangre. La diastólica mide cuando el corazón se relaja.
+La presión arterial se mide en mmHg.
+
+La saturación de oxígeno en sangre normal para un adulto es del 95% al 100%.
+Una saturación de oxígeno inferior al 90% se considera hipoxia y requiere atención médica.
+La saturación de oxígeno mide la cantidad de oxígeno unido a la hemoglobina comparada con la hemoglobina libre.
+
+El BMI o índice de masa corporal mide de forma aproximada el porcentaje de grasa corporal. Se usa como indicador de riesgo de diabetes o afecciones cardiacas, pero no debe usarse como única medida diagnóstica.
+
+El colesterol LDL es el colesterol malo. El HDL es el colesterol bueno.
+En Europa el colesterol total normal es de 5 mmol/L o menos. El colesterol no-HDL debe ser inferior a 4 mmol/L.
+El HDL normal es de 1 mmol/L en hombres y 1.2 mmol/L en mujeres (en mmol/L).
+En Estados Unidos el colesterol total normal es de 200 mg/dL en adultos.
+El HDL normal en hombres es de 40 mg/dL o más. En mujeres es de 50 mg/dL o más.
+El LDL normal está entre 40 y 190 mg/dL.
+Un HDL por encima de 2.2 mmol/L puede considerarse elevado.
+El colesterol expresado en porcentaje no es una unidad estándar y puede dificultar la evaluación clínica.
+
+La glucosa en sangre normal en ayunas es entre 70 y 99 mg/dL en una persona sin diabetes.
+Los diabéticos suelen tener rangos de glucosa entre 80 y 130 mg/dL, aunque varía por paciente.
+Una glucosa inferior a 70 mg/dL se considera hipoglucemia.
+Una glucosa entre 180 y 200 mg/dL o superior se considera hiperglucemia.
+El HbA1c mide la glucosa media en meses, el rango ideal es entre 6% y 8%. Por debajo es hipoglucemia, por encima hiperglucemia.
+
+La temperatura corporal normal es de 37°C (98.6°F), con una fluctuación de 0.25°C a 0.5°C.
+Se considera fiebre cuando la temperatura oral supera los 37.5°C (99.5°F) o la rectal supera los 38°C (100.5°F).
+La hiperpirexia se produce a partir de 41.1°C (106°F).
+La hipotermia se considera por debajo de 35°C (95°F) rectal.
+Un paciente puede estar hipotérmico con temperaturas entre 24°C (75.2°F) y 32°C (89.6°F).
+Si un valor de temperatura parece estar en °F por su valor numérico, debe considerarse la conversión a °C para evaluarlo correctamente.
+
+Las pulsaciones normales en reposo para un adulto son entre 60 y 100 latidos por minuto (BPM).
+Los rangos normales de pulsaciones varían según la edad, especialmente en niños y adolescentes.
+Las emociones, el estrés o la adrenalina pueden elevar las pulsaciones. El sueño o agentes depresivos pueden reducirlas.
+En niños de 11 años, una frecuencia cardíaca de 110 BPM puede ser normal o ligeramente elevada, no necesariamente taquicardia.
+
+La frecuencia respiratoria normal es entre 12 y 20 respiraciones por minuto.
+
+Al evaluar signos vitales de niños, los rangos normales difieren de los adultos. No deben aplicarse directamente los rangos adultos a pacientes pediátricos.
+Un niño de 11 años con saturación de oxígeno del 93% tiene un nivel bajo, incluso considerando rangos pediátricos.
+Una presión arterial de 110/85 mmHg en un niño de 11 años puede ser elevada para su edad.
+
+Los errores comunes en datos clínicos incluyen: conversión incorrecta de unidades (kg a lbs, °C a °F, mmol/L a mg/dL), campos vacíos, unidades incorrectas o no estándar, y no considerar las condiciones específicas del paciente como la edad.
+El colesterol expresado en porcentaje del total no permite una evaluación clínica precisa. Se recomienda usar mg/dL o mmol/L.

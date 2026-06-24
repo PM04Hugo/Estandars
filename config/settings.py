@@ -22,9 +22,9 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-h(-@xb%lc$t1ljn5z#as7x*-5#_i*nelc+vw%hd-9ta-&(n&as')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'estandar',
+
 ]
 
 MIDDLEWARE = [
@@ -89,9 +90,11 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-LOGIN_URL = '/login'
+
+LOGIN_URL = 'registro'  
 LOGOUT_REDIRECT_URL = '/login/'
 LOGIN_REDIRECT_URL = '/estandar/base'
+
 
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 

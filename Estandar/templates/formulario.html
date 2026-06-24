@@ -6,22 +6,24 @@
 
 {% block content %}
 
+
+
 <div style="
-  min-height: calc(100vh - 56px);
+  min-height: calc(60vh - 56px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 1rem; 
 ">
     <div style="
         background: white;
         border-radius: 12px;
         box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-        padding: 2.5rem;
+        padding: 1rem;
         width: 100%;
-        max-width: 720px;
+        max-width: 680px;  
     ">
-        <div style="margin-bottom: 1.5rem;">
+        <div style="margin-bottom: 1rem;">
 
             <h2 style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600; color: var(--color-text-default);">Regla</h2>
         </div>
@@ -33,7 +35,7 @@
             </div>
             <fieldset>
                 <div>
-                    <label class="fs-label" for="nombre">Nombre</label>
+                    <label class="fs-label" for="nombre">Medida</label>
                     <input class="fs-input" type="text" id="nombre" name="nombre" oninput="actualizarUnidades()" placeholder="Escribe un nombre..." required/>
                 </div>
                 <div>
@@ -69,6 +71,15 @@
                 <label class="fs-label" for="descripcion">Descripción</label>
                 <textarea class="fs-textarea" id="descripcion" name="descripcion" placeholder="Describe la regla..." rows="4"></textarea>  
             </div>
+            <div class="fs-field col-span-full">
+                <label class="fs-label" for="departamento">Departamento</label>
+                <select class="fs-select" id="departamento" name="departamento" required>
+                    <option value="">Selecciona un departamento...</option>
+                    {% for grupo in grupos %}
+                    <option value="{{ grupo.name }}">{{ grupo.name }}</option>  
+                    {% endfor %}
+                </select>
+            </div>
             <input type="hidden" id="minimo-hidden" name="minimo" value="0">
             <input type="hidden" id="maximo-hidden" name="maximo" value="0">
             <div class="fs-button-group">
@@ -77,6 +88,12 @@
         </form>
     </div>
 </div>
+
+<style>             
+  fieldset {
+    min-width: 0;
+  }
+</style>
 
 <script>
 const datos = {
