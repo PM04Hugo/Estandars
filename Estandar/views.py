@@ -585,7 +585,7 @@ def preview(request):
 
     try:
         df = pd.read_csv(io.BytesIO(csv_file.read()), sep=';')
-        df = df.fillna('')  # ← sustituye NaN por string vacío directamente
+        df = df.fillna('')  
         df = df.iloc[:20, :5]
 
         return JsonResponse({
